@@ -1,13 +1,14 @@
 package com.tr.anticheat;
 
 import org.bukkit.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-import org.bukkit.configuration.file.FileConfiguration;
+
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -36,6 +37,11 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     // 通用违规
     private int maxViolations;
     private String kickMessage;
+    
+    // 自动封禁
+    private boolean autoBanEnabled;
+    private int kicksBeforeBan;
+    private String banCommand;
 
     /* ------------------------- 数据存储 ------------------------- */
     // 移动/视角数据
@@ -48,6 +54,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     // 点击数据
     private final ConcurrentHashMap<UUID, Deque<Long>> clickRecords = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Integer> clickViolations = new ConcurrentHashMap<>();
+    
+    // 踢出次数记录
+    private final ConcurrentHashMap<UUID, Integer> kickCount = new ConcurrentHashMap<>();
 
     /* ------------------------- 插件生命周期 ------------------------- */
     @Override
@@ -93,6 +102,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         clicksKickMessage = ChatColor.translateAlternateColorCodes('&',
             config.getString("settings.clicks.kick-message", "&c检测到异常点击行为 (CPS: {cps})"));
         
+        // 自动封禁
+        autoBanEnabled = config.getBoolean("settings.violations.auto-ban.enabled", false);
+        kicksBeforeBan = config.getInt("settings.violations.auto-ban.kicks-before-ban", 3);
+        banCommand = ChatColor.translateAlternateColorCodes('&',
+            config.getString("settings.violations.auto-ban.ban-command", "ban {player} 多次使用作弊手段"));
+        
         // 白名单
         whitelistedWorlds = ConcurrentHashMap.newKeySet();
         whitelistedWorlds.addAll(config.getStringList("whitelist.worlds"));
@@ -114,6 +129,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
             int before = violationCount.size();
             violationCount.keySet().removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
             
+            // 清理踢出记录
+            kickCount.keySet().removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+            
             if (debugMode && before != violationCount.size()) {
                 getLogger().info("清理数据: 移除了 " + (before - violationCount.size()) + " 条离线玩家记录");
             }
@@ -132,18 +150,33 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
                 UUID uuid = player.getUniqueId();
                 Deque<Long> clicks = clickRecords.getOrDefault(uuid, new ConcurrentLinkedDeque<>());
                 
-                // 移除1秒前的记录
-                while (!clicks.isEmpty() && now - clicks.peekFirst() > 1000) {
-                    clicks.removeFirst();
+                // 优化点1: 确保队列不为空再执行清理
+                if (!clicks.isEmpty()) {
+                    // 优化点2: 使用迭代器安全地移除过期记录
+                    Iterator<Long> iterator = clicks.iterator();
+                    while (iterator.hasNext()) {
+                        if (now - iterator.next() > 1000) {
+                            iterator.remove();
+                        } else {
+                            // 由于队列是按时间排序的，遇到未过期的即可停止
+                            break;
+                        }
+                    }
                 }
                 
                 // 计算CPS
                 double cps = clicks.size();
-                if (cps >= maxCps) {
+                if (cps > maxCps) { // 使用严格大于
                     handleClickViolation(player, cps);
                 } else if (clickViolations.getOrDefault(uuid, 0) > 0) {
                     // 正常点击时减少违规计数
-                    clickViolations.put(uuid, clickViolations.get(uuid) - 1);
+                    clickViolations.put(uuid, Math.max(0, clickViolations.get(uuid) - 1));
+                }
+                
+                // 调试信息
+                if (debugMode && cps > maxCps / 2) {
+                    player.sendMessage(ChatColor.GRAY + "[反作弊] 当前CPS: " + 
+                                      ChatColor.WHITE + String.format("%.1f", cps));
                 }
             }
         }, 0, clicksCheckInterval * 20L);
@@ -206,6 +239,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         // 初始化点击数据
         clickRecords.put(uuid, new ConcurrentLinkedDeque<>());
         clickViolations.put(uuid, 0);
+        
+        // 初始化踢出计数
+        kickCount.putIfAbsent(uuid, 0);
     }
 
     @EventHandler
@@ -220,6 +256,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         violationCount.remove(uuid);
         clickRecords.remove(uuid);
         clickViolations.remove(uuid);
+        
+        // 清理踢出计数
+        kickCount.remove(uuid);
     }
 
     /* ------------------------- 检测逻辑 ------------------------- */
@@ -287,6 +326,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
             Bukkit.getScheduler().runTask(this, () -> {
                 player.kickPlayer(kickMessage + " (" + count + "/" + maxViolations + ")");
                 violationCount.remove(uuid);
+                
+                // 记录踢出次数并检查封禁
+                recordKickAndCheckBan(player);
             });
         }
         
@@ -317,7 +359,36 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
             Bukkit.getScheduler().runTask(this, () -> {
                 player.kickPlayer(msg);
                 clickViolations.remove(uuid);
+                
+                // 记录踢出次数并检查封禁
+                recordKickAndCheckBan(player);
             });
+        }
+    }
+    
+    // 记录踢出次数并执行封禁
+    private void recordKickAndCheckBan(Player player) {
+        if (!autoBanEnabled) return;
+        
+        UUID uuid = player.getUniqueId();
+        int kicks = kickCount.merge(uuid, 1, Integer::sum);
+        
+        if (kicks >= kicksBeforeBan) {
+            String command = banCommand
+                .replace("{player}", player.getName())
+                .replace("{kicks}", String.valueOf(kicks));
+            
+            // 执行封禁命令
+            Bukkit.getScheduler().runTask(this, () -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                if (debugMode) {
+                    getLogger().info("已自动封禁玩家: " + player.getName() + 
+                                   " 命令: " + command);
+                }
+            });
+            
+            // 移除记录
+            kickCount.remove(uuid);
         }
     }
 
