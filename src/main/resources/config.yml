@@ -2,26 +2,30 @@
 settings:
   # 移动检测设置
   movement:
-    max-horizontal-speed: 0.35
-    max-vertical-speed: 0.45
-    # 是否检测跳跃加速
+    max-horizontal-speed: 0.60
+    max-vertical-speed: 0.62
     check-jump-boost: true
-    # 是否检测地面加速
     check-ground-speed: true
   
   # 视角检测设置
   rotation:
-    max-angle-change: 30.0
+    max-angle-change: 900.0
     check-interval: 50 # 毫秒
-    # 是否检测垂直视角
     check-pitch: true
+  
+  # 点击检测设置
+  clicks:
+    enabled: true
+    max-cps: 16 # 每秒最大点击次数
+    check-interval: 5 # 检测间隔(秒)
+    violations-to-kick: 3 # 触发多少次后踢出
+    kick-message: "&c检测到异常点击行为 (CPS: {cps})"
   
   # 违规处理设置
   violations:
     max-violations: 10
     kick-message: "检测到多次作弊行为"
-    # 违规记录保存时间(分钟)
-    violation-expire: 60
+    violation-expire: 60 # 分钟
   
   # 调试模式
   debug: false
@@ -38,3 +42,4 @@ whitelist:
   bypass-permissions:
     - "anticheat.bypass.speed"
     - "anticheat.bypass.rotation"
+    - "anticheat.bypass.clicks"
