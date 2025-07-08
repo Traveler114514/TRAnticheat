@@ -2,8 +2,8 @@
 settings:
   # 移动检测设置
   movement:
-    max-horizontal-speed: 0.60
-    max-vertical-speed: 0.62
+    max-horizontal-speed: 0.62
+    max-vertical-speed: 0.63
     check-jump-boost: true
     check-ground-speed: true
   
@@ -17,8 +17,8 @@ settings:
   clicks:
     enabled: true
     max-cps: 16 # 每秒最大点击次数
-    check-interval: 5 # 检测间隔(秒)
-    violations-to-kick: 3 # 触发多少次后踢出
+    check-interval: 1 # 检测间隔(秒)
+    violations-to-kick: 2 # 触发多少次后踢出
     kick-message: "&c检测到异常点击行为 (CPS: {cps})"
   
   # 违规处理设置
@@ -26,6 +26,12 @@ settings:
     max-violations: 10
     kick-message: "检测到多次作弊行为"
     violation-expire: 60 # 分钟
+    
+    # 自动封禁配置
+    auto-ban:
+      enabled: true
+      kicks-before-ban: 3 # 被踢出多少次后封禁
+      ban-command: "ban {player} 多次使用作弊手段（累计被踢出 {kicks} 次）"
   
   # 调试模式
   debug: false
