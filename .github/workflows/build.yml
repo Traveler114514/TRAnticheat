@@ -1,9 +1,7 @@
 name: Build and Release Plugin
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'  # 触发条件：当推送v开头的语义化版本标签时
+  workflow_dispatch:
 
 jobs:
   build:
