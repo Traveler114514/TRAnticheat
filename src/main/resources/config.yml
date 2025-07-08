@@ -1,0 +1,40 @@
+# 反作弊插件配置
+settings:
+  # 移动检测设置
+  movement:
+    max-horizontal-speed: 0.35
+    max-vertical-speed: 0.45
+    # 是否检测跳跃加速
+    check-jump-boost: true
+    # 是否检测地面加速
+    check-ground-speed: true
+  
+  # 视角检测设置
+  rotation:
+    max-angle-change: 30.0
+    check-interval: 50 # 毫秒
+    # 是否检测垂直视角
+    check-pitch: true
+  
+  # 违规处理设置
+  violations:
+    max-violations: 10
+    kick-message: "检测到多次作弊行为"
+    # 违规记录保存时间(分钟)
+    violation-expire: 60
+  
+  # 调试模式
+  debug: false
+  log-violations: true
+
+# 白名单配置
+whitelist:
+  players: []
+  worlds:
+    - "creative_world"
+    - "minigame_arena"
+  
+  # 忽略的权限节点
+  bypass-permissions:
+    - "anticheat.bypass.speed"
+    - "anticheat.bypass.rotation"
