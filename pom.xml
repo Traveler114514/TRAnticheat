@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.example</groupId>
-    <artifactId>AntiCheatPlugin</artifactId>
+    <groupId>com.tr</groupId>
+    <artifactId>anticheat</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>AntiCheatPlugin</name>
-    <description>A simple anti-cheat plugin for Bukkit servers</description>
+    <name>TRAntiCheat</name>
+    <description>Advanced anti-cheat solution for Bukkit servers</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
