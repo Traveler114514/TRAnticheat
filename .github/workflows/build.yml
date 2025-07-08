@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Build
 
 on:
   workflow_dispatch:
@@ -20,3 +20,24 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B clean package --file pom.xml
+    - name: Find JAR file
+      id: find-jar
+      run: |
+        JAR_FILE=$(find . -path '*/target/*.jar' -not -name '*-sources.jar' -not -name '*-javadoc.jar' -not -name '*-tests.jar' | head -n 1)
+        JAR_NAME=$(basename "$JAR_FILE")
+        echo "jar_file=$JAR_FILE" >> $GITHUB_OUTPUT
+        echo "jar_name=$JAR_NAME" >> $GITHUB_OUTPUT
+        echo "Found JAR: $JAR_NAME"
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: application-jar
+        path: ${{ steps.find-jar.outputs.jar_file }}
+        retention-days: 7
+
+    - name: Show artifact info
+      run: |
+        echo "JAR file has been uploaded as artifact"
+        echo "After workflow completes, download from:"
+        echo "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
