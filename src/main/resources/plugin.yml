@@ -1,0 +1,24 @@
+name: TRAntiCheat
+version: 1.0.0
+main: com.tr.anticheat.AntiCheatPlugin
+api-version: 1.16
+author: Traveler114514
+description: Advanced anti-cheat solution for Bukkit servers
+commands:
+  anticheat-reload:
+    description: 重载反作弊插件配置
+    permission: anticheat.admin
+  anticheat-reset:
+    description: 重置玩家的违规计数
+    usage: /anticheat-reset [player]
+    permission: anticheat.admin
+permissions:
+  anticheat.admin:
+    description: 允许访问反作弊管理命令
+    default: op
+  anticheat.bypass.speed:
+    description: 绕过速度检测
+    default: false
+  anticheat.bypass.rotation:
+    description: 绕过视角检测
+    default: false
