@@ -1,0 +1,56 @@
+# 插件通用消息
+plugin:
+  enabled: "&a反作弊插件已启用! 版本: {0}"
+  disabled: "&c反作弊插件已禁用!"
+
+# 错误消息
+error:
+  invalid-uuid: "&c无效的UUID格式: {0}"
+  language-missing: "&c找不到语言文件: {0}"
+
+# 语言相关
+language:
+  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&7 条消息"
+  reloaded: "&7语言已重新加载: &f{0}"
+
+# 清理任务
+cleanup:
+  removed: "&7清理数据: 移除了 &f{0}&7 条违规记录和 &f{1}&7 条踢出记录"
+
+# 玩家相关
+player:
+  join: "&7玩家 &f{0}&7 加入游戏, 历史踢出次数: &f{1}"
+  kicked: "&7玩家 &f{0}&7 被踢出. 累计踢出次数: &f{1}/{2}"
+  banned: "&7玩家 &f{0}&7 已被封禁"
+
+# 调试消息
+debug:
+  cps: "&7[反作弊] &f当前CPS: &c{0}"
+
+# 违规检测
+violation:
+  detected: "&c[反作弊] &7检测到: &f{0}"
+  log: "[{0}] {1} 违规: {2} ({3}/{4})"
+
+# 踢出消息
+kick:
+  message: "&c检测到多次作弊行为 ({0}/{1})"
+
+# 点击检测
+clicks:
+  violation: "{0} 点击异常: {1} CPS ({2}/{3})"
+  kick: "&c检测到异常点击行为 (CPS: {0})"
+
+# 封禁相关
+ban:
+  queued: "&7玩家 &f{0}&7 已加入封禁队列. 命令: &f{1}"
+  executed: "&7玩家 &f{0}&7 已被封禁. 命令: &f{1}"
+  command: "ban {0} 多次使用作弊手段（累计被踢出 {1} 次）"
+
+# 移动检测
+movement:
+  speed: "移动速度异常"
+
+# 视角检测
+rotation:
+  speed: "异常转头行为"
