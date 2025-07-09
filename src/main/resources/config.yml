@@ -4,7 +4,7 @@ language: zh_cn
 settings:
   # 移动检测设置
   movement:
-    max-horizontal-speed: 0.62
+    max-horizontal-speed: 0.65
     max-vertical-speed: 0.95
     check-jump-boost: true
     check-ground-speed: true
