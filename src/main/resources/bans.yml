@@ -1,12 +1,20 @@
-# 自定义封禁消息配置
 ban-message: |
-  &4&l你已被服务器封禁
+  &4&l⚠ 账号封禁通知 ⚠
   &r
+  &f玩家: &c{player}
   &f原因: &7{reason}
-  &f封禁时间: &7{date}
-  &f解封时间: &7永久
+  &f时间: &7{date}
+  &f执行者: &7{banned-by}
   &r
-  &e如需申诉，请访问: &bhttps://traveler.dpdns.org
-  &e或联系管理员: &badmin@traveler.dpdns.org
+  &6■ 封禁类型: &7永久封禁
+  &6■ 解封时间: &7无
+  &r
+  &e如认为存在误封，请通过以下方式申诉:
+  &b▶ 网站: https://www.example.com/appeal
+  &b▶ QQ群: 123456789
+  &b▶ 邮箱: appeal@example.com
+  &r
+  &7请提供您的游戏ID和封禁时间以便核实
 
+default-reason: "系统检测到多次违规行为"
 bans:
