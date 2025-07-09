@@ -10,9 +10,12 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -72,6 +75,10 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     
     // 待封禁玩家队列
     private final ConcurrentLinkedQueue<BanTask> banQueue = new ConcurrentLinkedQueue<>();
+    
+    // 更新检测
+    private boolean updateAvailable = false;
+    private String latestVersion = "";
 
     /* ------------------------- 插件生命周期 ------------------------- */
     @Override
@@ -90,6 +97,11 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         startCleanupTask();
         startClickCheckTask();
         startBanProcessor();
+        
+        // 5. 检查更新
+        if (getConfig().getBoolean("update-check", true)) {
+            checkForUpdate();
+        }
         
         getLogger().info(getMessage("plugin.enabled", getDescription().getVersion()));
     }
@@ -372,6 +384,60 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
             }
         }, 20, 20); // 每秒检查一次
     }
+    
+    /* ------------------------- 更新检测 ------------------------- */
+    private void checkForUpdate() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                String updateUrl = getConfig().getString("update-url", "https://traveler114514.github.io/tr-anticheat/version.txt");
+                URL url = new URL(updateUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == 200) {
+                    BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                    latestVersion = reader.readLine().trim();
+                    reader.close();
+
+                    String currentVersion = getDescription().getVersion();
+
+                    if (!currentVersion.equals(latestVersion)) {
+                        updateAvailable = true;
+                        String downloadUrl = getConfig().getString("update-download-url", "https://traveler114514.github.io/tr-anticheat/download");
+                        
+                        // 控制台消息
+                        String consoleMsg = "§e[反作弊] §c发现新版本: §6" + latestVersion + 
+                                          "§c! 当前版本: §6" + currentVersion +
+                                          "\n§e下载更新: §b" + downloadUrl;
+                        getLogger().warning(consoleMsg);
+                        
+                        // 通知在线管理员
+                        Bukkit.getScheduler().runTask(this, () -> {
+                            for (Player player : Bukkit.getOnlinePlayers()) {
+                                if (player.isOp() || player.hasPermission("anticheat.admin")) {
+                                    String playerMsg = getMessage("update.available", 
+                                        latestVersion, currentVersion, downloadUrl);
+                                    player.sendMessage(playerMsg);
+                                }
+                            }
+                        });
+                    } else {
+                        getLogger().info("§a[反作弊] §7已是最新版本: " + currentVersion);
+                    }
+                } else {
+                    getLogger().warning("§e[反作弊] §c更新检查失败: HTTP " + responseCode);
+                }
+            } catch (Exception e) {
+                if (debugMode) {
+                    getLogger().log(Level.INFO, "§e[反作弊] §c更新检查失败: " + e.getMessage());
+                }
+            }
+        });
+    }
 
     /* ------------------------- 事件处理器 ------------------------- */
     @EventHandler(priority = EventPriority.HIGH)
@@ -433,6 +499,15 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 初始化踢出计数
         kickCount.putIfAbsent(uuid, 0);
+        
+        // 通知管理员更新信息
+        if (updateAvailable && (player.isOp() || player.hasPermission("anticheat.admin"))) {
+            String currentVersion = getDescription().getVersion();
+            String downloadUrl = getConfig().getString("update-download-url", "https://traveler114514.github.io/tr-anticheat/download");
+            String playerMsg = getMessage("update.available", 
+                latestVersion, currentVersion, downloadUrl);
+            player.sendMessage(playerMsg);
+        }
         
         if (debugMode) {
             int kicks = kickCount.get(uuid);
@@ -570,6 +645,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         // 超过阈值踢出
         if (violations >= clicksViolationsToKick) {
             Bukkit.getScheduler().runTask(this, () -> {
+                // 使用专门的点击踢出消息
                 player.kickPlayer(getMessage("clicks.kick", cps));
                 clickViolations.remove(uuid);
                 
