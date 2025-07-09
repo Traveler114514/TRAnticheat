@@ -23,4 +23,4 @@
 >
 > **Both of the above commands require tr.anticheat permission**
 ##  🌐  support
-**Submit an issue or contact us: admin@traveler.dpdns.org **
+**Submit an issue or contact us: admin@traveler.dpdns.org**
