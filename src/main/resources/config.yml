@@ -1,24 +1,24 @@
 # 反作弊插件配置
-language: cn  # 可选值: en, zh_CN, es, fr 等
+language: cn
 
 settings:
   # 移动检测设置
   movement:
     max-horizontal-speed: 0.62
-    max-vertical-speed: 0.63
+    max-vertical-speed: 0.75
     check-jump-boost: true
     check-ground-speed: true
   
   # 视角检测设置
   rotation:
-    max-angle-change: 900.0
+    max-angle-change: 1200.0
     check-interval: 50 # 毫秒
     check-pitch: true
   
   # 点击检测设置
   clicks:
     enabled: true
-    max-cps: 16 # 每秒最大点击次数
+    max-cps: 17 # 每秒最大点击次数
     check-interval: 1 # 检测间隔(秒)
     violations-to-kick: 2 # 触发多少次后踢出
   
