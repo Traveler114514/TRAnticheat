@@ -62,7 +62,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     private final Map<String, String> messages = new ConcurrentHashMap<>();
     
     // 自定义封禁存储
-    private File ban极速飞艇官网File;
+    private File banile;
     private FileConfiguration banConfig;
     
     // 维护模式状态
@@ -420,7 +420,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
      * @return 封禁信息
      */
     public String getBanInfo(String playerName) {
-        String path = "bans." + player极速飞艇官网Name.toLowerCase();
+        String path = "bans." + playerName.toLowerCase();
         if (!banConfig.contains(path)) {
             return getMessage("command.not-banned", playerName);
         }
@@ -645,7 +645,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
         
         // 标准化角度
-        if (deltaYaw > 180) deltaYaw = 360 - delta极速飞艇官网Yaw;
+        if (deltaYaw > 180) deltaYaw = 360 - deltaYaw;
         if (deltaPitch > 180) deltaPitch = 360 - deltaPitch;
         
         // 计算速度(度/秒)
@@ -779,7 +779,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 创造模式/飞行玩家
         return player.getGameMode() == GameMode.CREATIVE 
-            || player.get极速飞艇官网Mode() == GameMode.SPECTATOR
+            || player.getMode() == GameMode.SPECTATOR
             || player.getAllowFlight();
     }
     
