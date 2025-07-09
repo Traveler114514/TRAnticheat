@@ -49,15 +49,15 @@ clicks:
 
 # 封禁系统
 ban:
-  queued: "&7玩家 &f{0}&7 已加入封禁队列"
   executed: "&7玩家 &f{0}&7 已被封禁. 原因: &f{1}"
   reason: "检测到作弊行为 (累计被踢出 {0} 次)"
   info: |
     &4&l您已被封禁
     &r
+    &f玩家: &7{player}
     &f原因: &7{reason}
-    &f执行者: &7{banned-by}
     &f时间: &7{date}
+    &f执行者: &7{banned-by}
     &r
     &e申诉地址: &bexample.com/appeal
     &e联系方式: &bsupport@example.com
