@@ -73,3 +73,9 @@ command:
   not-banned: "&7Player &f{0}&7 is not banned"
   ban: "&7Player &f{0}&7 has been banned"
   unban: "&7Player &f{0}&7 has been unbanned"
+
+maintenance:
+status-changed: "&7Maintenance mode {0}"
+check-failed: "&cFailed to check maintenance status"
+enabled: "&cAntiCheat entered maintenance mode"
+disabled: "&aAntiCheat resumed normal operation"
