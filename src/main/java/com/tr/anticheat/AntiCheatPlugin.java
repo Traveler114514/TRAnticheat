@@ -63,7 +63,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     // 更新检测
     private boolean updateAvailable = false;
     private String latestVersion = null;
-    private static final String UPDATE_URL = "https://raw.githubusercontent.com/Traveler114514/TRAntiCheat/master/version.txt";
+    private static final String UPDATE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.text";
 
     /* ------------------------- 数据存储 ------------------------- */
     // 移动/视角数据
