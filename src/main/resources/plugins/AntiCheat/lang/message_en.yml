@@ -1,56 +1,75 @@
-# 插件通用消息
+# Plugin messages
 plugin:
   enabled: "&aAntiCheat plugin enabled! Version: {0}"
   disabled: "&cAntiCheat plugin disabled!"
 
-# 错误消息
+# Error messages
 error:
   invalid-uuid: "&cInvalid UUID format: {0}"
   language-missing: "&cLanguage file not found for: {0}"
+  ban-save: "&cFailed to save ban configuration"
 
-# 语言相关
+# Language related
 language:
   loaded: "&7Loaded language: &f{0}&7 with &f{1}&7 messages"
   reloaded: "&7Language reloaded: &f{0}"
 
-# 清理任务
+# Cleanup task
 cleanup:
   removed: "&7Cleaned up: Removed &f{0}&7 violation records and &f{1}&7 kick records"
 
-# 玩家相关
+# Player related
 player:
   join: "&7Player &f{0}&7 joined with &f{1}&7 previous kicks"
   kicked: "&7Player &f{0}&7 kicked. Total kicks: &f{1}/{2}"
   banned: "&7Player &f{0}&7 has been banned"
 
-# 调试消息
+# Debug messages
 debug:
   cps: "&7[AntiCheat] &fCurrent CPS: &c{0}"
+  teleport: "&7[AntiCheat] &fTeleported back to last valid location"
+  rotation: "&7[AntiCheat] &fRotation reset"
 
-# 违规检测
+# Violation detection
 violation:
   detected: "&c[AntiCheat] &7Detected: &f{0}"
   log: "[{0}] {1} violation: {2} ({3}/{4})"
+  movement: "Movement speed violation"
+  rotation: "Rotation speed violation"
+  clicks: "Click speed violation"
 
-# 踢出消息
+# Kick messages
 kick:
   message: "&cDetected multiple cheating attempts ({0}/{1})"
 
-# 点击检测
+# Click detection
 clicks:
   violation: "{0} abnormal clicks: {1} CPS ({2}/{3})"
   kick: "&cAbnormal click behavior detected (CPS: {0})"
 
-# 封禁相关
+# Ban system
 ban:
-  queued: "&7Player &f{0}&7 queued for ban. Command: &f{1}"
-  executed: "&7Player &f{0}&7 banned. Command: &f{1}"
-  command: "ban {0} Using cheats multiple times (kicked {1} times)"
+  queued: "&7Player &f{0}&7 queued for ban"
+  executed: "&7Player &f{0}&7 banned. Reason: &f{1}"
+  reason: "Cheating detected (kicked {0} times)"
+  info: |
+    &4&lYOU ARE BANNED
+    &r
+    &fReason: &7{reason}
+    &fBanned by: &7{banned-by}
+    &fDate: &7{date}
+    &r
+    &eAppeal at: &bexample.com/appeal
+    &eContact: &bsupport@example.com
 
-# 移动检测
-movement:
-  speed: "Abnormal movement speed"
+# Whitelist messages
+whitelist:
+  bypass: "&7[AntiCheat] &fChecks bypassed due to whitelist status"
 
-# 视角检测
-rotation:
-  speed: "Abnormal rotation behavior"
+# Commands
+command:
+  reload: "&7Configuration and language files reloaded"
+  baninfo: "&7Ban info for &f{0}&7: {1}"
+  not-banned: "&7Player &f{0}&7 is not banned"
+  ban: "&7Player &f{0}&7 has been banned"
+  unban: "&7Player &f{0}&7 has been unbanned"
