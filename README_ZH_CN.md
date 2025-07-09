@@ -16,3 +16,6 @@
 
 #### 5.白名单
 > **可信玩家免检，支持权限配置**
+##  ⚙️ 安装
+> **1.下载[TRAntiCheat](https://github.com/Traveler114514/TRAnticheat/releases)**
+> **2.将TRAntiCheat放入到你服务器的plugins文件夹中**
