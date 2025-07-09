@@ -22,3 +22,11 @@
 **2.将TRAntiCheat放入到你服务器的`plugins`文件夹中**
 
 **3.重启服务器或执行命令`/reload confirm`**
+## 🎮 命令
+> **/anticheat reload 重载TRAnticheat**
+> 
+> **/anticheat reset 重新设置TRAnticheat**
+>
+> **以上两个命令均需要tr.anticheat权限**
+## 🌐 支持
+**提交issue或联系我们：admin@traveler.dpdns.org**
