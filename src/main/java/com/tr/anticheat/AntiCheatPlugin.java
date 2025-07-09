@@ -141,11 +141,11 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     
     /* ------------------------- 多语言支持 ------------------------- */
     private void loadLanguageFile() {
-        File langFile = new File(getDataFolder(), "lang/messages_" + language + ".yml");
+        File langFile = new File(getDataFolder(), "messages_" + language + ".yml");
         
         // 如果语言文件不存在，从JAR中复制
         if (!langFile.exists()) {
-            saveResource("lang/messages_" + language + ".yml", false);
+            saveResource("messages_" + language + ".yml", false);
         }
         
         // 加载语言文件
@@ -154,7 +154,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         // 加载默认语言作为后备
         try {
             FileConfiguration defaultLang = YamlConfiguration.loadConfiguration(
-                new InputStreamReader(getResource("lang/messages_en.yml"))
+                new InputStreamReader(getResource("messages_en.yml"))
             );
             langConfig.setDefaults(defaultLang);
         } catch (Exception e) {
