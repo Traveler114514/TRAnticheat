@@ -18,5 +18,7 @@
 > **可信玩家免检，支持权限配置**
 ##  ⚙️ 安装
 **1.下载[TRAntiCheat](https://github.com/Traveler114514/TRAnticheat/releases)**
+
 **2.将TRAntiCheat放入到你服务器的`plugins`文件夹中**
+
 **3.重启服务器或执行命令`/reload confirm`**
