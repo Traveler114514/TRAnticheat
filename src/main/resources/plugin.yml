@@ -1,5 +1,5 @@
 name: TRAntiCheat
-version: 1.0.2
+version: 1.0.3
 main: com.tr.anticheat.AntiCheatPlugin
 api-version: 1.16
 author: Traveler114514
@@ -11,6 +11,13 @@ commands:
   anticheat-reset:
     description: 重置玩家的违规计数
     usage: /anticheat-reset [player]
+    permission: anticheat.admin
+  anticheat-update:
+    description: 检查插件更新
+    permission: anticheat.admin
+  traban:
+    description: 封禁指定玩家
+    usage: /traban <player> <reason>
     permission: anticheat.admin
 permissions:
   anticheat.admin:
