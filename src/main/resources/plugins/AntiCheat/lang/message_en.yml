@@ -49,15 +49,15 @@ clicks:
 
 # Ban system
 ban:
-  queued: "&7Player &f{0}&7 queued for ban"
   executed: "&7Player &f{0}&7 banned. Reason: &f{1}"
   reason: "Cheating detected (kicked {0} times)"
   info: |
     &4&lYOU ARE BANNED
     &r
+    &fPlayer: &7{player}
     &fReason: &7{reason}
-    &fBanned by: &7{banned-by}
     &fDate: &7{date}
+    &fBanned by: &7{banned-by}
     &r
     &eAppeal at: &bexample.com/appeal
     &eContact: &bsupport@example.com
