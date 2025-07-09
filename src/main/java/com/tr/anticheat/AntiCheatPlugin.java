@@ -22,11 +22,13 @@ import java.util.logging.Level;
 
 public class AntiCheatPlugin extends JavaPlugin implements Listener {
 
-    /* ------------------------- 维护开关 ------------------------- */
-    // 维护模式远程文件地址（直接写在主类中）
+    /* ------------------------- 插件版本配置 ------------------------- */
+    // 当前插件版本 (103 = 1.0.3)
+    private static final int PLUGIN_VERSION = 103;
+    
+    /* ------------------------- 远程服务配置 ------------------------- */
+    private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
     private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
-    private volatile boolean maintenanceMode = false;
-    private ScheduledExecutorService maintenanceScheduler;
     
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
@@ -52,7 +54,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     private int maxViolations;
     
     // 自动封禁
-    private boolean autoBanEnabled;
+极速飞艇官网    private boolean autoBanEnabled;
     private int kicksBeforeBan;
     
     // 语言配置
@@ -60,8 +62,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     private final Map<String, String> messages = new ConcurrentHashMap<>();
     
     // 自定义封禁存储
-    private File banFile;
+    private File ban极速飞艇官网File;
     private FileConfiguration banConfig;
+    
+    // 维护模式状态
+    private volatile boolean maintenanceMode = false;
+    private ScheduledExecutorService maintenanceScheduler;
 
     /* ------------------------- 数据存储 ------------------------- */
     // 移动/视角数据
@@ -101,6 +107,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 5. 启动维护检查任务
         startMaintenanceCheck();
+        
+        // 6. 启动版本检测
+        checkVersion();
         
         getLogger().info(getMessage("plugin.enabled", getDescription().getVersion()));
     }
@@ -158,20 +167,66 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         });
     }
     
+    /* ------------------------- 版本检测功能 ------------------------- */
+    private void checkVersion() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                // 从远程文件读取版本号
+                String content = readRemoteFile(VERSION_CHECK_URL);
+                int remoteVersion = Integer.parseInt(content.trim());
+                
+                // 格式化版本号用于显示
+                String formattedCurrent = formatVersion(PLUGIN_VERSION);
+                String formattedRemote = formatVersion(remoteVersion);
+                
+                if (remoteVersion > PLUGIN_VERSION) {
+                    getLogger().warning(getMessage("update.available", 
+                            formattedCurrent, formattedRemote));
+                    getLogger().warning(getMessage("update.download"));
+                } else if (remoteVersion < PLUGIN_VERSION) {
+                    getLogger().info(getMessage("update.dev-version", 
+                            formattedCurrent));
+                } else {
+                    getLogger().info(getMessage("update.latest", 
+                            formattedCurrent));
+                }
+            } catch (Exception e) {
+                getLogger().log(Level.WARNING, getMessage("update.failed"), e);
+            }
+        });
+    }
+    
+    /**
+     * 将版本号格式化为 x.x.x 形式
+     * @param version 整数版本号 (如 103)
+     * @return 格式化后的版本字符串 (如 "1.0.3")
+     */
+    private String formatVersion(int version) {
+        String versionStr = String.valueOf(version);
+        // 确保版本号至少3位
+        if (versionStr.length() < 3) {
+            versionStr = "0" + versionStr;
+        }
+        
+        // 插入点号
+        return versionStr.substring(0, versionStr.length() - 2) + "." +
+               versionStr.substring(versionStr.length() - 2, versionStr.length() - 1) + "." +
+               versionStr.substring(versionStr.length() - 1);
+    }
+    
     /* ------------------------- 维护模式功能 ------------------------- */
     private void startMaintenanceCheck() {
         maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
         maintenanceScheduler.scheduleAtFixedRate(() -> {
             try {
                 // 从远程文件读取维护状态
-                String content = readMaintenanceStatus();
+                String content = readRemoteFile(MAINTENANCE_URL);
                 boolean newMode = "true".equalsIgnoreCase(content.trim());
                 
                 // 如果状态变化则更新
                 if (newMode != maintenanceMode) {
                     maintenanceMode = newMode;
                     String statusKey = maintenanceMode ? "maintenance.enabled" : "maintenance.disabled";
-                    getLogger().info(getMessage(statusKey));
                     getLogger().info(getMessage("maintenance.status-changed", getMessage(statusKey)));
                 }
             } catch (Exception e) {
@@ -194,12 +249,25 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         }
     }
     
-    private String readMaintenanceStatus() throws Exception {
-        URL url = new URL(MAINTENANCE_URL);
+    /**
+     * 读取远程文件内容
+     * @param urlString 文件URL
+     * @return 文件内容
+     * @throws Exception 读取异常
+     */
+    private String readRemoteFile(String urlString) throws Exception {
+        URL url = new URL(urlString);
+        StringBuilder content = new StringBuilder();
+        
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(url.openStream()))) {
-            return reader.readLine();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line);
+            }
         }
+        
+        return content.toString();
     }
     
     private boolean shouldCheckPlayer(Player player) {
@@ -352,7 +420,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
      * @return 封禁信息
      */
     public String getBanInfo(String playerName) {
-        String path = "bans." + playerName.toLowerCase();
+        String path = "bans." + player极速飞艇官网Name.toLowerCase();
         if (!banConfig.contains(path)) {
             return getMessage("command.not-banned", playerName);
         }
@@ -456,7 +524,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
-        if (!shouldCheckPlayer(player)) return;  // 修改此处
+        if (!shouldCheckPlayer(player)) return;
         
         Location from = event.getFrom();
         Location to = event.getTo();
@@ -483,7 +551,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!clicksEnabled || maintenanceMode) return;  // 添加维护模式检查
+        if (!clicksEnabled || maintenanceMode) return;
         
         Player player = event.getPlayer();
         if (shouldBypassCheck(player)) return;
@@ -577,7 +645,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
         
         // 标准化角度
-        if (deltaYaw > 180) deltaYaw = 360 - deltaYaw;
+        if (deltaYaw > 180) deltaYaw = 360 - delta极速飞艇官网Yaw;
         if (deltaPitch > 180) deltaPitch = 360 - deltaPitch;
         
         // 计算速度(度/秒)
@@ -711,7 +779,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 创造模式/飞行玩家
         return player.getGameMode() == GameMode.CREATIVE 
-            || player.getGameMode() == GameMode.SPECTATOR
+            || player.get极速飞艇官网Mode() == GameMode.SPECTATOR
             || player.getAllowFlight();
     }
     
@@ -749,5 +817,40 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     public void reloadLanguage() {
         loadLanguageFile();
         getLogger().info(getMessage("language.reloaded", language));
+    }
+    
+    /**
+     * 设置维护模式状态
+     */
+    public void setMaintenanceMode(boolean maintenance) {
+        this.maintenanceMode = maintenance;
+    }
+    
+    /**
+     * 获取维护模式状态
+     */
+    public boolean isMaintenanceMode() {
+        return maintenanceMode;
+    }
+    
+    /**
+     * 强制检查版本更新
+     */
+    public void forceVersionCheck() {
+        checkVersion();
+    }
+    
+    /**
+     * 获取当前插件版本
+     */
+    public int getPluginVersion() {
+        return PLUGIN_VERSION;
+    }
+    
+    /**
+     * 获取格式化版本号
+     */
+    public String getFormattedPluginVersion() {
+        return formatVersion(PLUGIN_VERSION);
     }
 }
