@@ -12,10 +12,6 @@ commands:
     description: 重置玩家的违规计数
     usage: /anticheat-reset [player]
     permission: anticheat.admin
-  traban:
-    description: 封禁一个玩家
-    usage: /traban <player> [reason]
-    permission: anticheat.admin
 permissions:
   anticheat.admin:
     description: 允许访问反作弊管理命令
