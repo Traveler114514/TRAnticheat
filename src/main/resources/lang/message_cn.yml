@@ -1,0 +1,75 @@
+# 插件消息
+plugin:
+  enabled: "&a反作弊插件已启用! 版本: {0}"
+  disabled: "&c反作弊插件已禁用!"
+
+# 错误消息
+error:
+  invalid-uuid: "&c无效的UUID格式: {0}"
+  language-missing: "&c找不到语言文件: {0}"
+  ban-save: "&c无法保存封禁配置"
+
+# 语言相关
+language:
+  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&7 条消息"
+  reloaded: "&7语言已重新加载: &f{0}"
+
+# 清理任务
+cleanup:
+  removed: "&7清理数据: 移除了 &f{0}&7 条违规记录和 &f{1}&7 条踢出记录"
+
+# 玩家相关
+player:
+  join: "&7玩家 &f{0}&7 加入游戏, 历史踢出次数: &f{1}"
+  kicked: "&7玩家 &f{0}&7 被踢出. 累计踢出次数: &f{1}/{2}"
+  banned: "&7玩家 &f{0}&7 已被封禁"
+
+# 调试消息
+debug:
+  cps: "&7[反作弊] &f当前CPS: &c{0}"
+  teleport: "&7[反作弊] &f已传送回最后有效位置"
+  rotation: "&7[反作弊] &f视角已重置"
+
+# 违规检测
+violation:
+  detected: "&c[反作弊] &7检测到: &f{0}"
+  log: "[{0}] {1} 违规: {2} ({3}/{4})"
+  movement: "移动速度异常"
+  rotation: "视角转动异常"
+  clicks: "点击速度异常"
+
+# 踢出消息
+kick:
+  message: "&c检测到多次作弊行为 ({0}/{1})"
+
+# 点击检测
+clicks:
+  violation: "{0} 点击异常: {1} CPS ({2}/{3})"
+  kick: "&c检测到异常点击行为 (CPS: {0})"
+
+# 封禁系统
+ban:
+  executed: "&7玩家 &f{0}&7 已被封禁. 原因: &f{1}"
+  reason: "检测到作弊行为 (累计被踢出 {0} 次)"
+  info: |
+    &4&l您已被封禁
+    &r
+    &f玩家: &7{player}
+    &f原因: &7{reason}
+    &f时间: &7{date}
+    &f执行者: &7{banned-by}
+    &r
+    &e申诉地址: &bexample.com/appeal
+    &e联系方式: &bsupport@example.com
+
+# 白名单消息
+whitelist:
+  bypass: "&7[反作弊] &f由于白名单状态，已跳过检测"
+
+# 命令
+command:
+  reload: "&7配置和语言文件已重新加载"
+  baninfo: "&7玩家 &f{0}&7 的封禁信息: {1}"
+  not-banned: "&7玩家 &f{0}&7 未被封禁"
+  ban: "&7玩家 &f{0}&7 已被封禁"
+  unban: "&7玩家 &f{0}&7 已被解封"
