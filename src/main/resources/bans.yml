@@ -1,0 +1,12 @@
+# 自定义封禁消息配置
+ban-message: |
+  &4&l你已被服务器封禁
+  &r
+  &f原因: &7{reason}
+  &f封禁时间: &7{date}
+  &f解封时间: &7永久
+  &r
+  &e如需申诉，请访问: &bhttps://traveler.dpdns.org
+  &e或联系管理员: &badmin@traveler.dpdns.org
+
+bans:
