@@ -55,7 +55,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     private final ConcurrentHashMap<UUID, Deque<Long>> clickRecords = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<UUID, Integer> clickViolations = new ConcurrentHashMap<>();
     
-    // 踢出次数记录
+    // 踢出次数记录 (修复：不要清除此记录)
     private final ConcurrentHashMap<UUID, Integer> kickCount = new ConcurrentHashMap<>();
 
     /* ------------------------- 插件生命周期 ------------------------- */
@@ -129,11 +129,13 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
             int before = violationCount.size();
             violationCount.keySet().removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
             
-            // 清理踢出记录
+            // 清理踢出记录 (保留在线玩家的记录)
+            int beforeKicks = kickCount.size();
             kickCount.keySet().removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
             
-            if (debugMode && before != violationCount.size()) {
-                getLogger().info("清理数据: 移除了 " + (before - violationCount.size()) + " 条离线玩家记录");
+            if (debugMode && (before != violationCount.size() || beforeKicks != kickCount.size())) {
+                getLogger().info("清理数据: 移除了 " + (before - violationCount.size()) + 
+                               " 条违规记录和 " + (beforeKicks - kickCount.size()) + " 条踢出记录");
             }
         }, 20 * 60 * 10, 20 * 60 * 10);
     }
@@ -150,9 +152,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
                 UUID uuid = player.getUniqueId();
                 Deque<Long> clicks = clickRecords.getOrDefault(uuid, new ConcurrentLinkedDeque<>());
                 
-                // 优化点1: 确保队列不为空再执行清理
+                // 确保队列不为空再执行清理
                 if (!clicks.isEmpty()) {
-                    // 优化点2: 使用迭代器安全地移除过期记录
+                    // 使用迭代器安全地移除过期记录
                     Iterator<Long> iterator = clicks.iterator();
                     while (iterator.hasNext()) {
                         if (now - iterator.next() > 1000) {
@@ -240,15 +242,22 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         clickRecords.put(uuid, new ConcurrentLinkedDeque<>());
         clickViolations.put(uuid, 0);
         
-        // 初始化踢出计数
+        // 初始化踢出计数 (如果已有记录则保留)
         kickCount.putIfAbsent(uuid, 0);
+        
+        if (debugMode) {
+            int kicks = kickCount.get(uuid);
+            if (kicks > 0) {
+                getLogger().info("玩家 " + player.getName() + " 加入游戏，当前踢出次数: " + kicks);
+            }
+        }
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         
-        // 清理所有玩家数据
+        // 清理玩家数据 (但保留踢出计数)
         lastValidLocations.remove(uuid);
         lastYaw.remove(uuid);
         lastPitch.remove(uuid);
@@ -256,9 +265,6 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         violationCount.remove(uuid);
         clickRecords.remove(uuid);
         clickViolations.remove(uuid);
-        
-        // 清理踢出计数
-        kickCount.remove(uuid);
     }
 
     /* ------------------------- 检测逻辑 ------------------------- */
@@ -373,6 +379,10 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         UUID uuid = player.getUniqueId();
         int kicks = kickCount.merge(uuid, 1, Integer::sum);
         
+        if (debugMode) {
+            getLogger().info("玩家 " + player.getName() + " 被踢出，当前踢出次数: " + kicks + "/" + kicksBeforeBan);
+        }
+        
         if (kicks >= kicksBeforeBan) {
             String command = banCommand
                 .replace("{player}", player.getName())
@@ -387,7 +397,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
                 }
             });
             
-            // 移除记录
+            // 封禁后清除记录
             kickCount.remove(uuid);
         }
     }
