@@ -54,7 +54,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
     private int maxViolations;
     
     // 自动封禁
-极速飞艇官网    private boolean autoBanEnabled;
+    private boolean autoBanEnabled;
     private int kicksBeforeBan;
     
     // 语言配置
