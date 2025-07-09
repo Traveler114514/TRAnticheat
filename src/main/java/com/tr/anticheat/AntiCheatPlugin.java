@@ -24,7 +24,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
 
     /* ------------------------- 维护开关 ------------------------- */
     // 维护模式远程文件地址（直接写在主类中）
-    private static final String MAINTENANCE_URL = "http://example.com/maintenance.txt";
+    private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
     private volatile boolean maintenanceMode = false;
     private ScheduledExecutorService maintenanceScheduler;
     
