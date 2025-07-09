@@ -1,6 +1,6 @@
 # TRAnticheat Bukkit 反作弊
 ## 📖 简介
-TRAnticheat 是一款专为Minecraft服务器设计的高效反作弊系统，通过多重检测机制维护游戏公平性。
+> TRAnticheat 是一款专为Minecraft服务器设计的高效反作弊系统，通过多重检测机制维护游戏公平性。
 ## 🛠️ 功能
 #### CPS检测
 > **防止连点器/宏作弊，检测每秒点击次数**
