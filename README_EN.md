@@ -22,5 +22,7 @@
 > **/anticheat reset Reset TRAnticheat**
 >
 > **Both of the above commands require anticheat.admin permission**
+>
+> **/traban <player> <reason> To kick out a player for a reason, anticheat.traban permission is required**
 ##  🌐  support
 **Submit an issue or contact us: admin@traveler.dpdns.org**
