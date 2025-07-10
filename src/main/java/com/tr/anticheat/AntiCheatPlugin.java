@@ -30,8 +30,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private static final int PLUGIN_VERSION = 103;
     
     /* ------------------------- 远程服务配置 ------------------------- */
-    private static final String VERSION_CHECK_URL = "http://example.com/version.txt";
-    private static final String MAINTENANCE_URL = "http://example.com/maintenance.txt";
+    private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
+    private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
     
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
