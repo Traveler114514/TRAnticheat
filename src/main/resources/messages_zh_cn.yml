@@ -78,3 +78,11 @@ maintenance:
   enabled: "&c反作弊维护模式已启用，所有检测已暂停"
   disabled: "&a反作弊维护模式已禁用，检测功能恢复正常"
   status-changed: "维护模式状态已改变: {0}"
+
+# 更新检测消息
+update:
+  available: "&e发现新版本! 当前版本: &6{0}&e, 最新版本: &6{1}"
+  latest: "&a当前已是最新版本: &6{0}"
+  dev-version: "&d您正在使用开发版本: &6{0}"
+  failed: "&c版本检测失败"
+  download: "&e请前往 &bhttps://github.com/Traveler114514/TRAnticheat/releases/ &e下载更新"
