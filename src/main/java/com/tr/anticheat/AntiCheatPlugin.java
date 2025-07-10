@@ -177,9 +177,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private void checkVersion() {
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
             try {
+                getLogger().info("开始检查插件更新...");
+                
                 // 从远程文件读取版本号
                 String content = readRemoteFile(VERSION_CHECK_URL);
+                getLogger().info("远程版本文件内容: " + content);
+                
                 int remoteVersion = Integer.parseInt(content.trim());
+                getLogger().info("解析后的远程版本号: " + remoteVersion);
                 
                 // 格式化版本号用于显示
                 String formattedCurrent = formatVersion(PLUGIN_VERSION);
@@ -196,29 +201,15 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                     getLogger().info(getMessage("update.latest", 
                             formattedCurrent));
                 }
+            } catch (NumberFormatException e) {
+                getLogger().warning("版本号格式错误: " + e.getMessage());
+                getLogger().warning("请确保远程文件只包含数字版本号（如103）");
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, getMessage("update.failed"), e);
+                getLogger().log(Level.WARNING, "版本检测失败: " + e.getMessage(), e);
             }
         });
     }
-    
-    /**
-     * 将版本号格式化为 x.x.x 形式
-     * @param version 整数版本号 (如 103)
-     * @return 格式化后的版本字符串 (如 "1.0.3")
-     */
-    private String formatVersion(int version) {
-        String versionStr = String.valueOf(version);
-        // 确保版本号至少3位
-        if (versionStr.length() < 3) {
-            versionStr = "0" + versionStr;
-        }
-        
-        // 插入点号
-        return versionStr.substring(0, versionStr.length() - 2) + "." +
-               versionStr.substring(versionStr.length() - 2, versionStr.length() - 1) + "." +
-               versionStr.substring(versionStr.length() - 1);
-    }
+
     
    
     /* ------------------------- 维护模式功能 ------------------------- */
