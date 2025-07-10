@@ -220,6 +220,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                versionStr.substring(versionStr.length() - 1);
     }
     
+   
     /* ------------------------- 维护模式功能 ------------------------- */
     private void startMaintenanceCheck() {
         maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -233,10 +234,22 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                 if (newMode != maintenanceMode) {
                     maintenanceMode = newMode;
                     String statusKey = maintenanceMode ? "maintenance.enabled" : "maintenance.disabled";
+                    getLogger().info("维护模式状态变化: " + (maintenanceMode ? "启用" : "禁用"));
                     getLogger().info(getMessage("maintenance.status-changed", getMessage(statusKey)));
+                    
+                    // 通知所有玩家
+                    if (maintenanceMode) {
+                        Bukkit.getOnlinePlayers().forEach(player -> 
+                            player.sendMessage(getMessage("maintenance.enabled"))
+                        );
+                    } else {
+                        Bukkit.getOnlinePlayers().forEach(player -> 
+                            player.sendMessage(getMessage("maintenance.disabled"))
+                        );
+                    }
                 }
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, getMessage("maintenance.check-failed"), e);
+                getLogger().log(Level.WARNING, "维护模式检查失败", e);
             }
         }, 0, 5, TimeUnit.MINUTES); // 每5分钟检查一次
     }
