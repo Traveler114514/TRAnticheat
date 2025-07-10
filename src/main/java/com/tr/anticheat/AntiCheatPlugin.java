@@ -194,6 +194,16 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                     getLogger().warning(getMessage("update.available", 
                             formattedCurrent, formattedRemote));
                     getLogger().warning(getMessage("update.download"));
+                    
+                    // 通知在线管理员
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        if (player.hasPermission("anticheat.admin")) {
+                            player.sendMessage(ChatColor.RED + "[反作弊] 发现新版本可用!");
+                            player.sendMessage(ChatColor.GOLD + "当前版本: " + formattedCurrent);
+                            player.sendMessage(ChatColor.GREEN + "最新版本: " + formattedRemote);
+                            player.sendMessage(ChatColor.YELLOW + "请前往下载更新");
+                        }
+                    }
                 } else if (remoteVersion < PLUGIN_VERSION) {
                     getLogger().info(getMessage("update.dev-version", 
                             formattedCurrent));
@@ -208,6 +218,31 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                 getLogger().log(Level.WARNING, "版本检测失败: " + e.getMessage(), e);
             }
         });
+    }
+    
+    /**
+     * 将版本号格式化为 x.x.x 形式
+     * @param version 整数版本号 (如 103)
+     * @return 格式化后的版本字符串 (如 "1.0.3")
+     */
+    private String formatVersion(int version) {
+        String versionStr = String.valueOf(version);
+        
+        // 处理版本号长度不足的情况
+        while (versionStr.length() < 3) {
+            versionStr = "0" + versionStr;
+        }
+        
+        // 确保版本号至少有3位数字
+        if (versionStr.length() >= 3) {
+            // 插入点号: 1.0.3
+            return versionStr.substring(0, versionStr.length() - 2) + "." +
+                   versionStr.substring(versionStr.length() - 2, versionStr.length() - 1) + "." +
+                   versionStr.substring(versionStr.length() - 1);
+        }
+        
+        // 如果版本号格式异常，返回原始字符串
+        return String.valueOf(version);
     }
 
     
