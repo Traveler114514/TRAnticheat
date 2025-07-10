@@ -78,3 +78,11 @@ maintenance:
   enabled: "&c Anti cheating maintenance mode has been enabled, all detections have been paused"
   disabled: 'Anti cheating maintenance mode disabled, detection function restored to normal'
   status-changed: "Maintenance mode status has changed: {0}"
+
+#Update detection message
+update:
+  available: "&e has discovered a new version! Current version:&6 {0}&e, Latest version:&6 {1}“
+  latest: "&A is currently the latest version:&6 {0}"
+  dev version: "&d You are using development version:&6 {0}"
+  failed: "&c version detection failed"
+  download: "&e Please go& bhttps://github.com/Traveler114514/TRAnticheat/releases &Download and update e“
