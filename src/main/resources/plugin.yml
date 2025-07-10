@@ -5,6 +5,11 @@ api-version: 1.16
 author: Traveler114514
 description: Advanced anti-cheat solution for Bukkit servers
 commands:
+  traban:
+    description: 封禁指定的玩家
+    usage: /traban <玩家> <理由>
+    permission: anticheat.traban
+    permission-message: "&c你没有权限使用此命令！"
   anticheat-reload:
     description: 重载反作弊插件配置
     permission: anticheat.admin
@@ -13,6 +18,9 @@ commands:
     usage: /anticheat-reset [player]
     permission: anticheat.admin
 permissions:
+  anticheat.traban:
+    description: 允许使用 /traban 命令
+    default: op
   anticheat.admin:
     description: 允许访问反作弊管理命令
     default: op
