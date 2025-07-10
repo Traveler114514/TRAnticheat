@@ -741,4 +741,206 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
 
     private void handleClickViolation(Player player, double cps) {
         UUID uuid = player.getUniqueId();
-        int violations = clickViol
+        int violations = clickViolations.merge(uuid, 1, Integer::sum);
+        
+        // 日志记录
+        if (getConfig().getBoolean("settings.log-violations", true)) {
+            getLogger().warning(getMessage("clicks.violation", 
+                player.getName(),
+                cps,
+                violations,
+                clicksViolationsToKick
+            ));
+        }
+        
+        // 超过阈值踢出
+        if (violations >= clicksViolationsToKick) {
+            Bukkit.getScheduler().runTask(this, () -> {
+                player.kickPlayer(getMessage("clicks.kick", cps));
+                clickViolations.remove(uuid);
+                
+                // 记录踢出次数并检查封禁
+                recordKickAndCheckBan(player);
+            });
+        }
+    }
+    
+    // 记录踢出次数并执行封禁
+    private void recordKickAndCheckBan(Player player) {
+        if (!autoBanEnabled) return;
+        
+        UUID uuid = player.getUniqueId();
+        int kicks = kickCount.merge(uuid, 1, Integer::sum);
+        
+        // 记录日志
+        getLogger().info(getMessage("player.kicked", player.getName(), kicks, kicksBeforeBan));
+        
+        if (kicks >= kicksBeforeBan) {
+            // 使用自定义封禁
+            String reason = getMessage("ban.reason", String.valueOf(kicks));
+            customBanPlayer(player.getName(), reason, "AntiCheat系统");
+            
+            // 移除记录
+            kickCount.remove(uuid);
+            
+            // 记录到日志
+            getLogger().info(getMessage("ban.executed", player.getName(), reason));
+        }
+    }
+
+    /* ------------------------- 工具方法 ------------------------- */
+    private void updatePlayerData(Player player) {
+        UUID uuid = player.getUniqueId();
+        Location loc = player.getLocation();
+        
+        lastValidLocations.put(uuid, loc.clone());
+        lastYaw.put(uuid, loc.getYaw());
+        lastPitch.put(uuid, loc.getPitch());
+    }
+
+    private boolean shouldBypassCheck(Player player) {
+        // 世界白名单
+        if (whitelistedWorlds.contains(player.getWorld().getName())) {
+            return true;
+        }
+        
+        // 玩家白名单
+        if (whitelistedPlayers.contains(player.getUniqueId())) {
+            return true;
+        }
+        
+        // 权限检查
+        for (String perm : getConfig().getStringList("whitelist.bypass-permissions")) {
+            if (player.hasPermission(perm)) {
+                return true;
+            }
+        }
+        
+        // 创造模式/飞行玩家
+        return player.getGameMode() == GameMode.CREATIVE 
+            || player.getGameMode() == GameMode.SPECTATOR
+            || player.getAllowFlight();
+    }
+    
+    // 内部类: 封禁任务
+    private static class BanTask {
+        final String playerName;
+        final String banCommand;
+        
+        BanTask(String playerName, String banCommand) {
+            this.playerName = playerName;
+            this.banCommand = banCommand;
+        }
+    }
+
+    /* ------------------------- API方法 ------------------------- */
+    public int getViolations(UUID playerId) {
+        return violationCount.getOrDefault(playerId, 0);
+    }
+    
+    public void resetViolations(UUID playerId) {
+        violationCount.remove(playerId);
+    }
+    
+    public void addWhitelistPlayer(UUID playerId) {
+        whitelistedPlayers.add(playerId);
+    }
+    
+    public void removeWhitelistPlayer(UUID playerId) {
+        whitelistedPlayers.remove(playerId);
+    }
+    
+    /**
+     * 重新加载语言文件
+     */
+    public void reloadLanguage() {
+        loadLanguageFile();
+        getLogger().info(getMessage("language.reloaded", language));
+    }
+    
+    /**
+     * 设置维护模式状态
+     */
+    public void setMaintenanceMode(boolean maintenance) {
+        this.maintenanceMode = maintenance;
+    }
+    
+    /**
+     * 获取维护模式状态
+     */
+    public boolean isMaintenanceMode() {
+        return maintenanceMode;
+    }
+    
+    /**
+     * 强制检查版本更新
+     */
+    public void forceVersionCheck() {
+        checkVersion();
+    }
+    
+    /**
+     * 获取当前插件版本
+     */
+    public int getPluginVersion() {
+        return PLUGIN_VERSION;
+    }
+    
+    /**
+     * 获取格式化版本号
+     */
+    public String getFormattedPluginVersion() {
+        return formatVersion(PLUGIN_VERSION);
+    }
+    
+    /* ------------------------- 命令处理器 ------------------------- */
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("traban")) {
+            // 权限检查
+            if (!sender.hasPermission("anticheat.traban")) {
+                sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
+                return true;
+            }
+            
+            // 参数验证
+            if (args.length < 2) {
+                sender.sendMessage(ChatColor.RED + "用法: /traban <玩家> <理由>");
+                return true;
+            }
+            
+            String playerName = args[0];
+            
+            // 构建理由
+            StringBuilder reasonBuilder = new StringBuilder();
+            for (int i = 1; i < args.length; i++) {
+                reasonBuilder.append(args[i]).append(" ");
+            }
+            String reason = reasonBuilder.toString().trim();
+            
+            // 获取执行者名称
+            String bannedBy = sender instanceof Player ? sender.getName() : "控制台";
+            
+            // 执行封禁
+            customBanPlayer(playerName, reason, bannedBy);
+            
+            // 踢出在线玩家
+            Player targetPlayer = Bukkit.getPlayer(playerName);
+            if (targetPlayer != null && targetPlayer.isOnline()) {
+                String banMessage = generateBanMessage(
+                    playerName, 
+                    reason, 
+                    getFormattedDate(),
+                    bannedBy
+                );
+                targetPlayer.kickPlayer(banMessage);
+            }
+            
+            sender.sendMessage(ChatColor.GREEN + "已封禁玩家 " + playerName + " | 理由: " + reason);
+            getLogger().info("玩家 " + playerName + " 已被 " + bannedBy + " 封禁 | 理由: " + reason);
+            
+            return true;
+        }
+        return false;
+    }
+}
