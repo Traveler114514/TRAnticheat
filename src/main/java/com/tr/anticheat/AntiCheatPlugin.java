@@ -599,7 +599,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 视角检测
         if (checkRotationSpeed(player, from, to)) {
             handleViolation(player, "violation.rotation", true);
-            to.set极速飞艇官网Yaw(lastYaw.get(player.getUniqueId()));
+            to.setYaw(lastYaw.get(player.getUniqueId()));
             to.setPitch(lastPitch.get(player.getUniqueId()));
             event.setTo(to);
         }
