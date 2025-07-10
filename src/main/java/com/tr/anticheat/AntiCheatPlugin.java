@@ -371,39 +371,62 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
      * @param playerName 玩家名
      * @param reason 封禁原因
      */
-    private void customBanPlayer(String playerName, String reason) {
-        // 添加到封禁列表
-        String path = "bans." + playerName.toLowerCase();
-        String banDate = getFormattedDate();
-        banConfig.set(path + ".reason", reason);
-        banConfig.set(path + ".date", banDate);
-        banConfig.set(path + ".banned-by", "AntiCheat");
-        saveBanConfig();
+    /**
+ * 自定义封禁玩家
+ * @param playerName 玩家名
+ * @param reason 封禁原因
+ * @param bannedBy 执行封禁的人
+ */
+private void customBanPlayer(String playerName, String reason, String bannedBy) {
+    // 添加到封禁列表
+    String path = "bans." + playerName.toLowerCase();
+    String banDate = getFormattedDate();
+    banConfig.set(path + ".reason", reason);
+    banConfig.set(path + ".date", banDate);
+    banConfig.set(path + ".banned-by", bannedBy); // 添加执行者
+    saveBanConfig();
+    
+    // 如果玩家在线，立即踢出
+    Player player = Bukkit.getPlayerExact(playerName);
+    if (player != null && player.isOnline()) {
+        String banMessage = generateBanMessage(playerName, reason, banDate, bannedBy);
         
-        // 如果玩家在线，立即踢出
-        Player player = Bukkit.getPlayerExact(playerName);
-        if (player != null && player.isOnline()) {
-            String banMessage = generateBanMessage(playerName, reason, banDate);
-            
-            Bukkit.getScheduler().runTask(this, () -> {
-                player.kickPlayer(banMessage);
-            });
-        }
+        Bukkit.getScheduler().runTask(this, () -> {
+            player.kickPlayer(banMessage);
+        });
     }
+}
     
     /**
      * 生成封禁消息
      */
-    private String generateBanMessage(String playerName, String reason, String date) {
-        String template = banConfig.getString("ban-message", 
-            getMessage("ban.info", "Unknown reason", "System", "Unknown date"));
-        
-        return ChatColor.translateAlternateColorCodes('&', template
-            .replace("{player}", playerName)
-            .replace("{reason}", reason)
-            .replace("{date}", date)
-            .replace("{banned-by}", "AntiCheat"));
-    }
+    /**
+ * 生成封禁消息
+ */
+private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
+    String template = banConfig.getString("ban-message", 
+        "&4&l您已被服务器封禁\n" +
+        "&r\n" +
+        "&f玩家: &7{player}\n" +
+        "&f原因: &7{reason}\n" +
+        "&f封禁时间: &7{date}\n" +
+        "&f执行者: &7{banned-by}\n" +
+        "&r\n" +
+        "&e此封禁为永久封禁\n" +
+        "&r\n" +
+        "&6如果您认为这是误封，请通过以下方式申诉:\n" +
+        "&b- 网站: https://traveler114514\n" +
+        "&b- QQ群: 315809417\n" +
+        "&b- 邮箱: admin@traveler114514\n" +
+        "&r\n" +
+        "&7请提供您的游戏ID和封禁时间以便我们处理");
+    
+    return ChatColor.translateAlternateColorCodes('&', template
+        .replace("{player}", playerName)
+        .replace("{reason}", reason)
+        .replace("{date}", date)
+        .replace("{banned-by}", bannedBy)); // 替换执行者
+}
     
     /**
      * 检查玩家是否被封禁
