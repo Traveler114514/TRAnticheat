@@ -9,6 +9,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,15 +22,15 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
-public class AntiCheatPlugin extends JavaPlugin implements Listener {
+public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExecutor {
 
     /* ------------------------- 插件版本配置 ------------------------- */
     // 当前插件版本 (103 = 1.0.3)
     private static final int PLUGIN_VERSION = 103;
     
     /* ------------------------- 远程服务配置 ------------------------- */
-    private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
-    private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
+    private static final String VERSION_CHECK_URL = "http://example.com/version.txt";
+    private static final String MAINTENANCE_URL = "http://example.com/maintenance.txt";
     
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
@@ -110,6 +112,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 6. 启动版本检测
         checkVersion();
+        
+        // 7. 注册命令
+        getCommand("traban").setExecutor(this);
         
         getLogger().info(getMessage("plugin.enabled", getDescription().getVersion()));
     }
@@ -345,8 +350,24 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         banConfig = YamlConfiguration.loadConfiguration(banFile);
         
         // 创建默认封禁配置
-        banConfig.addDefault("ban-message", getMessage("ban.info", "Unknown reason", "System", "Unknown date"));
-        banConfig.addDefault("default-reason", getMessage("ban.reason", "multiple"));
+        banConfig.addDefault("ban-message", 
+            "&4&l您已被服务器封禁\n" +
+            "&r\n" +
+            "&f玩家: &7{player}\n" +
+            "&f原因: &7{reason}\n" +
+            "&f封禁时间: &7{date}\n" +
+            "&f执行者: &7{banned-by}\n" +
+            "&r\n" +
+            "&e此封禁为永久封禁\n" +
+            "&r\n" +
+            "&6如果您认为这是误封，请通过以下方式申诉:\n" +
+            "&b- 网站: https://traveler114514\n" +
+            "&b- QQ群: 315809417\n" +
+            "&b- 邮箱: admin@traveler114514\n" +
+            "&r\n" +
+            "&7请提供您的游戏ID和封禁时间以便我们处理");
+        
+        banConfig.addDefault("default-reason", "多次检测到作弊行为");
         banConfig.options().copyDefaults(true);
         saveBanConfig();
     }
@@ -370,63 +391,55 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
      * 自定义封禁玩家
      * @param playerName 玩家名
      * @param reason 封禁原因
+     * @param bannedBy 执行者
      */
-    /**
- * 自定义封禁玩家
- * @param playerName 玩家名
- * @param reason 封禁原因
- * @param bannedBy 执行封禁的人
- */
-private void customBanPlayer(String playerName, String reason, String bannedBy) {
-    // 添加到封禁列表
-    String path = "bans." + playerName.toLowerCase();
-    String banDate = getFormattedDate();
-    banConfig.set(path + ".reason", reason);
-    banConfig.set(path + ".date", banDate);
-    banConfig.set(path + ".banned-by", bannedBy); // 添加执行者
-    saveBanConfig();
-    
-    // 如果玩家在线，立即踢出
-    Player player = Bukkit.getPlayerExact(playerName);
-    if (player != null && player.isOnline()) {
-        String banMessage = generateBanMessage(playerName, reason, banDate, bannedBy);
+    private void customBanPlayer(String playerName, String reason, String bannedBy) {
+        // 添加到封禁列表
+        String path = "bans." + playerName.toLowerCase();
+        String banDate = getFormattedDate();
+        banConfig.set(path + ".reason", reason);
+        banConfig.set(path + ".date", banDate);
+        banConfig.set(path + ".banned-by", bannedBy);
+        saveBanConfig();
         
-        Bukkit.getScheduler().runTask(this, () -> {
-            player.kickPlayer(banMessage);
-        });
+        // 如果玩家在线，立即踢出
+        Player player = Bukkit.getPlayerExact(playerName);
+        if (player != null && player.isOnline()) {
+            String banMessage = generateBanMessage(playerName, reason, banDate, bannedBy);
+            
+            Bukkit.getScheduler().runTask(this, () -> {
+                player.kickPlayer(banMessage);
+            });
+        }
     }
-}
     
     /**
      * 生成封禁消息
      */
-    /**
- * 生成封禁消息
- */
-private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
-    String template = banConfig.getString("ban-message", 
-        "&4&l您已被服务器封禁\n" +
-        "&r\n" +
-        "&f玩家: &7{player}\n" +
-        "&f原因: &7{reason}\n" +
-        "&f封禁时间: &7{date}\n" +
-        "&f执行者: &7{banned-by}\n" +
-        "&r\n" +
-        "&e此封禁为永久封禁\n" +
-        "&r\n" +
-        "&6如果您认为这是误封，请通过以下方式申诉:\n" +
-        "&b- 网站: https://traveler114514\n" +
-        "&b- QQ群: 315809417\n" +
-        "&b- 邮箱: admin@traveler114514\n" +
-        "&r\n" +
-        "&7请提供您的游戏ID和封禁时间以便我们处理");
-    
-    return ChatColor.translateAlternateColorCodes('&', template
-        .replace("{player}", playerName)
-        .replace("{reason}", reason)
-        .replace("{date}", date)
-        .replace("{banned-by}", bannedBy)); // 替换执行者
-}
+    private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
+        String template = banConfig.getString("ban-message", 
+            "&4&l您已被服务器封禁\n" +
+            "&r\n" +
+            "&f玩家: &7{player}\n" +
+            "&f原因: &7{reason}\n" +
+            "&f封禁时间: &7{date}\n" +
+            "&f执行者: &7{banned-by}\n" +
+            "&r\n" +
+            "&e此封禁为永久封禁\n" +
+            "&r\n" +
+            "&6如果您认为这是误封，请通过以下方式申诉:\n" +
+            "&b- 网站: https://traveler114514\n" +
+            "&b- QQ群: 315809417\n" +
+            "&b- 邮箱: admin@traveler114514\n" +
+            "&r\n" +
+            "&7请提供您的游戏ID和封禁时间以便我们处理");
+        
+        return ChatColor.translateAlternateColorCodes('&', template
+            .replace("{player}", playerName)
+            .replace("{reason}", reason)
+            .replace("{date}", date)
+            .replace("{banned-by}", bannedBy));
+    }
     
     /**
      * 检查玩家是否被封禁
@@ -450,8 +463,9 @@ private String generateBanMessage(String playerName, String reason, String date,
         
         String reason = banConfig.getString(path + ".reason", banConfig.getString("default-reason"));
         String date = banConfig.getString(path + ".date", "Unknown date");
+        String bannedBy = banConfig.getString(path + ".banned-by", "系统");
         
-        return generateBanMessage(playerName, reason, date);
+        return generateBanMessage(playerName, reason, date, bannedBy);
     }
 
     /* ------------------------- 定时任务 ------------------------- */
@@ -634,11 +648,13 @@ private String generateBanMessage(String playerName, String reason, String date,
             String path = "bans." + playerName.toLowerCase();
             
             String reason = banConfig.getString(path + ".reason", 
-                banConfig.getString("default-reason", getMessage("ban.reason", "multiple")));
+                banConfig.getString("default-reason", "多次检测到作弊行为"));
             
             String date = banConfig.getString(path + ".date", getFormattedDate());
             
-            String banMessage = generateBanMessage(playerName, reason, date);
+            String bannedBy = banConfig.getString(path + ".banned-by", "系统");
+            
+            String banMessage = generateBanMessage(playerName, reason, date, bannedBy);
             
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage);
         }
@@ -725,155 +741,4 @@ private String generateBanMessage(String playerName, String reason, String date,
 
     private void handleClickViolation(Player player, double cps) {
         UUID uuid = player.getUniqueId();
-        int violations = clickViolations.merge(uuid, 1, Integer::sum);
-        
-        // 日志记录
-        if (getConfig().getBoolean("settings.log-violations", true)) {
-            getLogger().warning(getMessage("clicks.violation", 
-                player.getName(),
-                cps,
-                violations,
-                clicksViolationsToKick
-            ));
-        }
-        
-        // 超过阈值踢出
-        if (violations >= clicksViolationsToKick) {
-            Bukkit.getScheduler().runTask(this, () -> {
-                player.kickPlayer(getMessage("clicks.kick", cps));
-                clickViolations.remove(uuid);
-                
-                // 记录踢出次数并检查封禁
-                recordKickAndCheckBan(player);
-            });
-        }
-    }
-    
-    // 记录踢出次数并执行封禁
-    private void recordKickAndCheckBan(Player player) {
-        if (!autoBanEnabled) return;
-        
-        UUID uuid = player.getUniqueId();
-        int kicks = kickCount.merge(uuid, 1, Integer::sum);
-        
-        // 记录日志
-        getLogger().info(getMessage("player.kicked", player.getName(), kicks, kicksBeforeBan));
-        
-        if (kicks >= kicksBeforeBan) {
-            // 使用自定义封禁
-            String reason = getMessage("ban.reason", String.valueOf(kicks));
-            customBanPlayer(player.getName(), reason);
-            
-            // 移除记录
-            kickCount.remove(uuid);
-            
-            // 记录到日志
-            getLogger().info(getMessage("ban.executed", player.getName(), reason));
-        }
-    }
-
-    /* ------------------------- 工具方法 ------------------------- */
-    private void updatePlayerData(Player player) {
-        UUID uuid = player.getUniqueId();
-        Location loc = player.getLocation();
-        
-        lastValidLocations.put(uuid, loc.clone());
-        lastYaw.put(uuid, loc.getYaw());
-        lastPitch.put(uuid, loc.getPitch());
-    }
-
-     private boolean shouldBypassCheck(Player player) {
-    // 世界白名单
-    if (whitelistedWorlds.contains(player.getWorld().getName())) {
-        return true;
-    }
-    
-    // 玩家白名单
-    if (whitelistedPlayers.contains(player.getUniqueId())) {
-        return true;
-    }
-    
-    // 权限检查
-    for (String perm : getConfig().getStringList("whitelist.bypass-permissions")) {
-        if (player.hasPermission(perm)) {
-            return true;
-        }
-    }
-    
-    // 创造模式/飞行玩家
-    return player.getGameMode() == GameMode.CREATIVE 
-        || player.getGameMode() == GameMode.SPECTATOR
-        || player.getAllowFlight();
-}
-    
-    // 内部类: 封禁任务
-    private static class BanTask {
-        final String playerName;
-        final String banCommand;
-        
-        BanTask(String playerName, String banCommand) {
-            this.playerName = playerName;
-            this.banCommand = banCommand;
-        }
-    }
-
-    /* ------------------------- API方法 ------------------------- */
-    public int getViolations(UUID playerId) {
-        return violationCount.getOrDefault(playerId, 0);
-    }
-    
-    public void resetViolations(UUID playerId) {
-        violationCount.remove(playerId);
-    }
-    
-    public void addWhitelistPlayer(UUID playerId) {
-        whitelistedPlayers.add(playerId);
-    }
-    
-    public void removeWhitelistPlayer(UUID playerId) {
-        whitelistedPlayers.remove(playerId);
-    }
-    
-    /**
-     * 重新加载语言文件
-     */
-    public void reloadLanguage() {
-        loadLanguageFile();
-        getLogger().info(getMessage("language.reloaded", language));
-    }
-    
-    /**
-     * 设置维护模式状态
-     */
-    public void setMaintenanceMode(boolean maintenance) {
-        this.maintenanceMode = maintenance;
-    }
-    
-    /**
-     * 获取维护模式状态
-     */
-    public boolean isMaintenanceMode() {
-        return maintenanceMode;
-    }
-    
-    /**
-     * 强制检查版本更新
-     */
-    public void forceVersionCheck() {
-        checkVersion();
-    }
-    
-    /**
-     * 获取当前插件版本
-     */
-    public int getPluginVersion() {
-        return PLUGIN_VERSION;
-    }
-    
-    /**
-     * 获取格式化版本号
-     */
-    public String getFormattedPluginVersion() {
-        return formatVersion(PLUGIN_VERSION);
-    }
-}
+        int violations = clickViol
