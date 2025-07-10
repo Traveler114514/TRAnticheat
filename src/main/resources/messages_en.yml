@@ -75,7 +75,6 @@ command:
   unban: "&7Player &f{0}&7 has been unbanned"
 
 maintenance:
-status-changed: "&7Maintenance mode {0}"
-check-failed: "&cFailed to check maintenance status"
-enabled: "&cAntiCheat entered maintenance mode"
-disabled: "&aAntiCheat resumed normal operation"
+  enabled: "&c Anti cheating maintenance mode has been enabled, all detections have been paused"
+  disabled: 'Anti cheating maintenance mode disabled, detection function restored to normal'
+  status-changed: "Maintenance mode status has changed: {0}"
