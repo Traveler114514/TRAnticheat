@@ -11,7 +11,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandExecutor;
 
 import java.io.File;
 import java.io.IOException;
