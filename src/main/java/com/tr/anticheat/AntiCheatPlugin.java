@@ -173,52 +173,55 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         });
     }
     
-    /* ------------------------- 版本检测功能 ------------------------- */
     private void checkVersion() {
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-            try {
-                getLogger().info("开始检查插件更新...");
+    Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+        try {
+            getLogger().info("开始检查插件更新...");
+            
+            // 从远程文件读取版本号
+            String content = readRemoteFile(VERSION_CHECK_URL);
+            getLogger().info("远程版本文件内容: " + content);
+            
+            int remoteVersion = Integer.parseInt(content.trim());
+            getLogger().info("解析后的远程版本号: " + remoteVersion);
+            
+            // 格式化版本号用于显示
+            String formattedCurrent = formatVersion(PLUGIN_VERSION);
+            String formattedRemote = formatVersion(remoteVersion);
+            
+            if (remoteVersion > PLUGIN_VERSION) {
+                // 使用完整的消息字符串
+                String availableMsg = getMessage("update.available", formattedCurrent, formattedRemote);
+                String downloadMsg = getMessage("update.download");
                 
-                // 从远程文件读取版本号
-                String content = readRemoteFile(VERSION_CHECK_URL);
-                getLogger().info("远程版本文件内容: " + content);
+                getLogger().warning(availableMsg);
+                getLogger().warning(downloadMsg);
                 
-                int remoteVersion = Integer.parseInt(content.trim());
-                getLogger().info("解析后的远程版本号: " + remoteVersion);
-                
-                // 格式化版本号用于显示
-                String formattedCurrent = formatVersion(PLUGIN_VERSION);
-                String formattedRemote = formatVersion(remoteVersion);
-                
-                if (remoteVersion > PLUGIN_VERSION) {
-                    getLogger().warning(getMessage("update.available", 
-                            formattedCurrent, formattedRemote));
-                    getLogger().warning(getMessage("update.download"));
-                    
-                    // 通知在线管理员
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        if (player.hasPermission("anticheat.admin")) {
-                            player.sendMessage(ChatColor.RED + "[反作弊] 发现新版本可用!");
-                            player.sendMessage(ChatColor.GOLD + "当前版本: " + formattedCurrent);
-                            player.sendMessage(ChatColor.GREEN + "最新版本: " + formattedRemote);
-                            player.sendMessage(ChatColor.YELLOW + "请前往下载更新");
-                        }
+                // 通知在线管理员
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (player.hasPermission("anticheat.admin")) {
+                        player.sendMessage(ChatColor.RED + "[反作弊] 发现新版本可用!");
+                        player.sendMessage(ChatColor.GOLD + "当前版本: " + formattedCurrent);
+                        player.sendMessage(ChatColor.GREEN + "最新版本: " + formattedRemote);
+                        player.sendMessage(ChatColor.YELLOW + "请前往下载更新");
                     }
-                } else if (remoteVersion < PLUGIN_VERSION) {
-                    getLogger().info(getMessage("update.dev-version", 
-                            formattedCurrent));
-                } else {
-                    getLogger().info(getMessage("update.latest", 
-                            formattedCurrent));
                 }
-            } catch (NumberFormatException e) {
-                getLogger().warning("版本号格式错误: " + e.getMessage());
-                getLogger().warning("请确保远程文件只包含数字版本号（如103）");
-            } catch (Exception e) {
-                getLogger().log(Level.WARNING, "版本检测失败: " + e.getMessage(), e);
+            } else if (remoteVersion < PLUGIN_VERSION) {
+                String devVersionMsg = getMessage("update.dev-version", formattedCurrent);
+                getLogger().info(devVersionMsg);
+            } else {
+                String latestMsg = getMessage("update.latest", formattedCurrent);
+                getLogger().info(latestMsg);
             }
-        });
-    }
+        } catch (NumberFormatException e) {
+            getLogger().warning("版本号格式错误: " + e.getMessage());
+            getLogger().warning("请确保远程文件只包含数字版本号（如103）");
+        } catch (Exception e) {
+            String failedMsg = getMessage("update.failed");
+            getLogger().log(Level.WARNING, failedMsg, e);
+        }
+    });
+}
     
     /**
      * 将版本号格式化为 x.x.x 形式
