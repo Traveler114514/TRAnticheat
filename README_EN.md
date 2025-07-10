@@ -21,6 +21,6 @@
 > 
 > **/anticheat reset Reset TRAnticheat**
 >
-> **Both of the above commands require tr.anticheat permission**
+> **Both of the above commands require anticheat.admin permission**
 ##  🌐  support
 **Submit an issue or contact us: admin@traveler.dpdns.org**
