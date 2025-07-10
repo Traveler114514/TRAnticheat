@@ -75,7 +75,6 @@ command:
   unban: "&7玩家 &f{0}&7 已被解封"
 
 maintenance:
-status-changed: "&7维护模式已{0}"
-check-failed: "&c无法检查维护状态"
-enabled: "&c反作弊已进入维护模式"
-disabled: "&a反作弊已恢复正常运行"
+  enabled: "&c反作弊维护模式已启用，所有检测已暂停"
+  disabled: "&a反作弊维护模式已禁用，检测功能恢复正常"
+  status-changed: "维护模式状态已改变: {0}"
