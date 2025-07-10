@@ -27,6 +27,8 @@
 > 
 > **/anticheat reset 重新设置TRAnticheat**
 >
-> **以上两个命令均需要tr.anticheat权限**
+> **以上两个命令均需要anticheatadmin权限**
+>
+> **/traban <玩家> <理由> 以理由踢出玩家，需要anticheat.traban权限**
 ## 🌐 支持
 **提交issue或联系我们：admin@traveler.dpdns.org**
