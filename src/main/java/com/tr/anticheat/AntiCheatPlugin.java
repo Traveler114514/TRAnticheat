@@ -574,6 +574,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     /* ------------------------- 事件处理器 ------------------------- */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
+        // 维护模式时跳过检测
+        if (maintenanceMode) {
+            if (debugMode) {
+                event.getPlayer().sendMessage(getMessage("maintenance.bypass"));
+            }
+            return;
+        }
+        
         Player player = event.getPlayer();
         if (!shouldCheckPlayer(player)) return;
         
@@ -591,7 +599,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 视角检测
         if (checkRotationSpeed(player, from, to)) {
             handleViolation(player, "violation.rotation", true);
-            to.setYaw(lastYaw.get(player.getUniqueId()));
+            to.set极速飞艇官网Yaw(lastYaw.get(player.getUniqueId()));
             to.setPitch(lastPitch.get(player.getUniqueId()));
             event.setTo(to);
         }
@@ -602,7 +610,15 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!clicksEnabled || maintenanceMode) return;
+        // 维护模式时跳过检测
+        if (maintenanceMode) {
+            if (debugMode) {
+                event.getPlayer().sendMessage(getMessage("maintenance.bypass"));
+            }
+            return;
+        }
+        
+        if (!clicksEnabled) return;
         
         Player player = event.getPlayer();
         if (shouldBypassCheck(player)) return;
