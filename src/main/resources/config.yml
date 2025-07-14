@@ -2,6 +2,11 @@
 language: zh_cn
 
 settings:
+  # 鞘翅设置
+  elytra:
+    exemption: true  # 是否豁免鞘翅检测（推荐true）
+    max-horizontal-speed: 2.0 # 水平速度阈值
+    max-vertical-speed: 1.5   # 垂直速度阈值
   # 移动检测设置
   movement:
     max-horizontal-speed: 0.63
