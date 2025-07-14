@@ -32,8 +32,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private static final int PLUGIN_VERSION = 103;
     
     /* ------------------------- 远程服务配置 ------------------------- */
-    private static final String VERSION_CHECK_URL = "http://example.com/version.txt";
-    private static final String MAINTENANCE_URL = "http://example.com/maintenance.txt";
+    private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
+    private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
     
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
@@ -163,7 +163,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         clicksEnabled = config.getBoolean("settings.clicks.enabled", true);
         maxCps = config.getInt("settings.clicks.max-cps", 15);
         clicksCheckInterval = config.getInt("settings.clicks.check-interval", 5);
-        clicksViolationsToKick = config.getInt("settings.clicks.violations-toick", 3);
+        clicksViolationsToKick = config.getInt("settings.clicks.violations-to-kick", 3);
         
         // 自动封禁
         autoBanEnabled = config.getBoolean("settings.violations.auto-ban.enabled", false);
@@ -417,7 +417,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             "&f玩家: &7{player}\n" +
             "&f原因: &7{reason}\n" +
             "&f封禁时间: &7{date}\n" +
-            "&f执行者: &7{banned-by}\n" +
+            "&f执行者: &7{banned-by}\\n" +
             "&r\n" +
             "&e此封禁为永久封禁\n" +
             "&r\n" +
@@ -625,7 +625,6 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
 
     /* ------------------------- 事件处理器 ------------------------- */
     @EventHandler(priority = EventPriority.HIGH)
-@EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         // 维护模式时跳过检测
         if (maintenanceMode) {
@@ -724,6 +723,20 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     }
 
     @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        
+        // 清理玩家数据 (但保留踢出计数)
+        lastValidLocations.remove(uuid);
+        lastYaw.remove(uuid);
+        lastPitch.remove(uuid);
+        lastRotationCheck.remove(uuid);
+        violationCount.remove(uuid);
+        clickRecords.remove(uuid);
+        clickViolations.remove(uuid);
+    }
+    
+@EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         
