@@ -679,7 +679,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     public void onPlayerInteract(PlayerInteractEvent event) {
         // 维护模式时跳过检测
         if (maintenanceMode) {
-            if极速飞艇官网 (debugMode) {
+            if (debugMode) {
                 event.getPlayer().sendMessage(getMessage("maintenance.bypass"));
             }
             return;
