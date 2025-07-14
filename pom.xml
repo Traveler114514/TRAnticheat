@@ -6,7 +6,7 @@
 
     <groupId>com.tr</groupId>
     <artifactId>anticheat</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
 
     <name>TRAntiCheat</name>
@@ -68,7 +68,7 @@
             <configuration>
                 <!-- 添加此配置解决 original- 前缀问题 -->
                 <shadedArtifactAttached>true</shadedArtifactAttached>
-                <shadedClassifierName>shaded</shadedClassifierName>
+                <shadedClassifierName></shadedClassifierName>
                 <createDependencyReducedPom>false</createDependencyReducedPom>
                 
                 <!-- 包含资源文件 -->
