@@ -10,21 +10,21 @@ settings:
     
   # 移动检测设置
   movement:
-    max-horizontal-speed: 0.63
+    max-horizontal-speed: 1.00
     max-vertical-speed: 5.20
     check-jump-boost: true
     check-ground-speed: true
   
   # 视角检测设置
   rotation:
-    max-angle-change: 956.7
-    check-interval: 25 # 毫秒
+    max-angle-change: 1250
+    check-interval: 15 # 毫秒
     check-pitch: true
   
   # 点击检测设置
   clicks:
     enabled: true
-    max-cps: 17 # 每秒最大点击次数
+    max-cps: 18 # 每秒最大点击次数
     check-interval: 1 # 检测间隔(秒)
     violations-to-kick: 2 # 触发多少次后踢出
   
