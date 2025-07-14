@@ -623,7 +623,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         }, 20, 20); // 每秒检查一次
     }
 
-    /* ------------------------- 事件处理器 ------------------------- */
+/* ------------------------- 事件处理器 ------------------------- */
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         // 维护模式时跳过检测
@@ -722,21 +722,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         }
     }
 
+    // 只保留一个 onPlayerQuit 方法
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        UUID uuid = event.getPlayer().getUniqueId();
-        
-        // 清理玩家数据 (但保留踢出计数)
-        lastValidLocations.remove(uuid);
-        lastYaw.remove(uuid);
-        lastPitch.remove(uuid);
-        lastRotationCheck.remove(uuid);
-        violationCount.remove(uuid);
-        clickRecords.remove(uuid);
-        clickViolations.remove(uuid);
-    }
-    
-@EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         
@@ -769,7 +756,6 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             event.disallow(PlayerLoginEvent.Result.KICK_BANNED, banMessage);
         }
     }
-
     /* ------------------------- 检测逻辑 ------------------------- */
     private boolean checkMovementSpeed(Player player, Location from, Location to) {
         Vector vector = to.toVector().subtract(from.toVector());
