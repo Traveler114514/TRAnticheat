@@ -10,14 +10,14 @@ settings:
     
   # 移动检测设置
   movement:
-    max-horizontal-speed: 0.95 # 横向速度检测
+    max-horizontal-speed: 0.90 # 横向速度检测
     max-vertical-speed: 9999.0 #垂直不检测
     check-jump-boost: true
     check-ground-speed: true
   
   # 视角检测设置
   rotation:
-    max-angle-change: 1250
+    max-angle-change: 1350
     check-interval: 15 # 毫秒
     check-pitch: true
   
