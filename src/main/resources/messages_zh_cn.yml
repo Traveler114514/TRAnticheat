@@ -92,3 +92,10 @@ elytra:
   enabled: "§a鞘翅飞行检测已禁用"
   disabled: "§c鞘翅飞行检测已启用"
   bypass: "§7[反作弊] §f检测到鞘翅飞行，已跳过检测"
+
+# messages_zh_cn.yml
+violation:
+  flight: "飞行作弊"
+  
+flight:
+  detected: "&c检测到飞行! 空中时间: {0}tick (最大允许: {1}tick)"
