@@ -1,17 +1,19 @@
 package com.tr.anticheat;
 
 import org.bukkit.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.CommandExecutor;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +32,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private static final int PLUGIN_VERSION = 103;
     
     /* ------------------------- 远程服务配置 ------------------------- */
-    private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
-    private static final String MAINTENANCE_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/maintenance.txt";
+    private static final String VERSION_CHECK_URL = "http://example.com/version.txt";
+    private static final String MAINTENANCE_URL = "http://example.com/maintenance.txt";
     
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
@@ -42,6 +44,10 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     // 移动检测
     private double maxHorizontalSpeed;
     private double maxVerticalSpeed;
+    
+    // 鞘翅专用阈值
+    private double elytraHorizontalThreshold;
+    private double elytraVerticalThreshold;
     
     // 视角检测
     private float maxAngleChange;
@@ -145,6 +151,10 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         maxHorizontalSpeed = config.getDouble("settings.movement.max-horizontal-speed", 0.35);
         maxVerticalSpeed = config.getDouble("settings.movement.max-vertical-speed", 0.45);
         
+        // 鞘翅专用阈值
+        elytraHorizontalThreshold = config.getDouble("settings.elytra.max-horizontal-speed", 2.0);
+        elytraVerticalThreshold = config.getDouble("settings.elytra.max-vertical-speed", 1.5);
+        
         // 视角检测
         maxAngleChange = (float) config.getDouble("settings.rotation.max-angle-change", 30.0);
         rotationCheckInterval = config.getLong("settings.rotation.check-interval", 50);
@@ -153,7 +163,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         clicksEnabled = config.getBoolean("settings.clicks.enabled", true);
         maxCps = config.getInt("settings.clicks.max-cps", 15);
         clicksCheckInterval = config.getInt("settings.clicks.check-interval", 5);
-        clicksViolationsToKick = config.getInt("settings.clicks.violations-to-kick", 3);
+        clicksViolationsToKick = config.getInt("settings.clicks.violations-toick", 3);
         
         // 自动封禁
         autoBanEnabled = config.getBoolean("settings.violations.auto-ban.enabled", false);
@@ -173,55 +183,55 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         });
     }
     
+    /* ------------------------- 版本检测功能 ------------------------- */
     private void checkVersion() {
-    Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-        try {
-            getLogger().info("开始检查插件更新...");
-            
-            // 从远程文件读取版本号
-            String content = readRemoteFile(VERSION_CHECK_URL);
-            getLogger().info("远程版本文件内容: " + content);
-            
-            int remoteVersion = Integer.parseInt(content.trim());
-            getLogger().info("解析后的远程版本号: " + remoteVersion);
-            
-            // 格式化版本号用于显示
-            String formattedCurrent = formatVersion(PLUGIN_VERSION);
-            String formattedRemote = formatVersion(remoteVersion);
-            
-            if (remoteVersion > PLUGIN_VERSION) {
-                // 使用完整的消息字符串
-                String availableMsg = getMessage("update.available", formattedCurrent, formattedRemote);
-                String downloadMsg = getMessage("update.download");
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            try {
+                getLogger().info("开始检查插件更新...");
                 
-                getLogger().warning(availableMsg);
-                getLogger().warning(downloadMsg);
+                // 从远程文件读取版本号
+                String content = readRemoteFile(VERSION_CHECK_URL);
+                getLogger().info("远程版本文件内容: " + content);
                 
-                // 通知在线管理员
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    if (player.hasPermission("anticheat.admin")) {
-                        player.sendMessage(ChatColor.RED + "[反作弊] 发现新版本可用!");
-                        player.sendMessage(ChatColor.GOLD + "当前版本: " + formattedCurrent);
-                        player.sendMessage(ChatColor.GREEN + "最新版本: " + formattedRemote);
-                        player.sendMessage(ChatColor.YELLOW + "请前往下载更新");
+                int remoteVersion = Integer.parseInt(content.trim());
+                getLogger().info("解析后的远程版本号: " + remoteVersion);
+                
+                // 格式化版本号用于显示
+                String formattedCurrent = formatVersion(PLUGIN_VERSION);
+                String formattedRemote = formatVersion(remoteVersion);
+                
+                if (remoteVersion > PLUGIN_VERSION) {
+                    String availableMsg = getMessage("update.available", formattedCurrent, formattedRemote);
+                    String downloadMsg = getMessage("update.download");
+                    
+                    getLogger().warning(availableMsg);
+                    getLogger().warning(downloadMsg);
+                    
+                    // 通知在线管理员
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        if (player.hasPermission("anticheat.admin")) {
+                            player.sendMessage(ChatColor.RED + "[反作弊] 发现新版本可用!");
+                            player.sendMessage(ChatColor.GOLD + "当前版本: " + formattedCurrent);
+                            player.sendMessage(ChatColor.GREEN + "最新版本: " + formattedRemote);
+                            player.sendMessage(ChatColor.YELLOW + "请前往下载更新");
+                        }
                     }
+                } else if (remoteVersion < PLUGIN_VERSION) {
+                    String devVersionMsg = getMessage("update.dev-version", formattedCurrent);
+                    getLogger().info(devVersionMsg);
+                } else {
+                    String latestMsg = getMessage("update.latest", formattedCurrent);
+                    getLogger().info(latestMsg);
                 }
-            } else if (remoteVersion < PLUGIN_VERSION) {
-                String devVersionMsg = getMessage("update.dev-version", formattedCurrent);
-                getLogger().info(devVersionMsg);
-            } else {
-                String latestMsg = getMessage("update.latest", formattedCurrent);
-                getLogger().info(latestMsg);
+            } catch (NumberFormatException e) {
+                getLogger().warning("版本号格式错误: " + e.getMessage());
+                getLogger().warning("请确保远程文件只包含数字版本号（如103）");
+            } catch (Exception e) {
+                String failedMsg = getMessage("update.failed");
+                getLogger().log(Level.WARNING, failedMsg, e);
             }
-        } catch (NumberFormatException e) {
-            getLogger().warning("版本号格式错误: " + e.getMessage());
-            getLogger().warning("请确保远程文件只包含数字版本号（如103）");
-        } catch (Exception e) {
-            String failedMsg = getMessage("update.failed");
-            getLogger().log(Level.WARNING, failedMsg, e);
-        }
-    });
-}
+        });
+    }
     
     /**
      * 将版本号格式化为 x.x.x 形式
@@ -247,9 +257,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 如果版本号格式异常，返回原始字符串
         return String.valueOf(version);
     }
-
     
-   
     /* ------------------------- 维护模式功能 ------------------------- */
     private void startMaintenanceCheck() {
         maintenanceScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -267,18 +275,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                     getLogger().info(getMessage("maintenance.status-changed", getMessage(statusKey)));
                     
                     // 通知所有玩家
-                    if (maintenanceMode) {
-                        Bukkit.getOnlinePlayers().forEach(player -> 
-                            player.sendMessage(getMessage("maintenance.enabled"))
-                        );
-                    } else {
-                        Bukkit.getOnlinePlayers().forEach(player -> 
-                            player.sendMessage(getMessage("maintenance.disabled"))
-                        );
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        player.sendMessage(getMessage(statusKey));
                     }
                 }
             } catch (Exception e) {
-                getLogger().log(Level.WARNING, "维护模式检查失败", e);
+                getLogger().log(Level.WARNING, getMessage("maintenance.check-failed"), e);
             }
         }, 0, 5, TimeUnit.MINUTES); // 每5分钟检查一次
     }
@@ -338,6 +340,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 如果语言文件不存在，从JAR中复制
         if (!langFile.exists()) {
             saveResource("messages_" + language + ".yml", false);
+            getLogger().info("已创建语言文件: " + langFile.getName());
         }
         
         // 加载语言文件
@@ -363,6 +366,21 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         if (debugMode) {
             getLogger().info(getMessage("language.loaded", language, messages.size()));
+            
+            // 检查更新相关键是否存在
+            checkKeyExists("update.available");
+            checkKeyExists("update.download");
+            checkKeyExists("update.latest");
+            checkKeyExists("update.dev-version");
+            checkKeyExists("update.failed");
+        }
+    }
+    
+    private void checkKeyExists(String key) {
+        if (messages.containsKey(key)) {
+            getLogger().info("找到语言键: " + key + " = " + messages.get(key));
+        } else {
+            getLogger().warning("缺少语言键: " + key);
         }
     }
     
@@ -535,7 +553,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             // 维护模式时跳过检测
-            if (maintenanceMode) return;
+            if (maintenanceMode) {
+                if (debugMode) {
+                    getLogger().info("维护模式启用，跳过点击检测");
+                }
+                return;
+            }
             
             long now = System.currentTimeMillis();
             
@@ -602,6 +625,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
 
     /* ------------------------- 事件处理器 ------------------------- */
     @EventHandler(priority = EventPriority.HIGH)
+@EventHandler(priority = EventPriority.HIGH)
     public void onPlayerMove(PlayerMoveEvent event) {
         // 维护模式时跳过检测
         if (maintenanceMode) {
@@ -619,7 +643,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         if (to == null) return;
 
         // 移动速度检测
-        if (checkMovementSpeed(from, to)) {
+        if (checkMovementSpeed(player, from, to)) {
             handleViolation(player, "violation.movement", true);
             event.setTo(lastValidLocations.get(player.getUniqueId()));
             return;
@@ -636,12 +660,26 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 更新最后有效位置
         updatePlayerData(player);
     }
+    
+    @EventHandler
+    public void onEntityGlide(EntityToggleGlideEvent event) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
+            if (debugMode) {
+                if (event.isGliding()) {
+                    player.sendMessage("§a鞘翅飞行已启动");
+                } else {
+                    player.sendMessage("§c鞘翅飞行已停止");
+                }
+            }
+        }
+    }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         // 维护模式时跳过检测
         if (maintenanceMode) {
-            if (debugMode) {
+            if极速飞艇官网 (debugMode) {
                 event.getPlayer().sendMessage(getMessage("maintenance.bypass"));
             }
             return;
@@ -720,12 +758,19 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     }
 
     /* ------------------------- 检测逻辑 ------------------------- */
-    private boolean checkMovementSpeed(Location from, Location to) {
+    private boolean checkMovementSpeed(Player player, Location from, Location to) {
         Vector vector = to.toVector().subtract(from.toVector());
         
         double horizontal = Math.hypot(vector.getX(), vector.getZ());
         double vertical = Math.abs(vector.getY());
         
+        // 鞘翅飞行特殊处理
+        if (player.isGliding()) {
+            // 使用专用阈值检查鞘翅飞行
+            return horizontal > elytraHorizontalThreshold || vertical > elytraVerticalThreshold;
+        }
+        
+        // 普通移动检测
         return horizontal > maxHorizontalSpeed || vertical > maxVerticalSpeed;
     }
 
@@ -986,12 +1031,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             // 踢出在线玩家
             Player targetPlayer = Bukkit.getPlayer(playerName);
             if (targetPlayer != null && targetPlayer.isOnline()) {
-                String banMessage = generateBanMessage(
-                    playerName, 
-                    reason, 
-                    getFormattedDate(),
-                    bannedBy
-                );
+                String banMessage = generateBanMessage(playerName, reason, getFormattedDate(), bannedBy);
                 targetPlayer.kickPlayer(banMessage);
             }
             
