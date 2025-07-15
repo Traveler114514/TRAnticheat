@@ -2,6 +2,7 @@
 plugin:
   enabled: "&a反作弊插件已启用! 版本: {0}"
   disabled: "&c反作弊插件已禁用!"
+  reloaded: "&a配置已重新加载"
 
 # 错误消息
 error:
@@ -12,7 +13,7 @@ error:
 
 # 语言相关
 language:
-  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&7 条消息"
+  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&极 7 条消息"
   reloaded: "&7语言已重新加载: &f{0}"
 
 # 清理任务
@@ -30,6 +31,8 @@ debug:
   cps: "&7[反作弊] &f当前CPS: &c{0}"
   teleport: "&7[反作弊] &f已传送回最后有效位置"
   rotation: "&7[反作弊] &f视角已重置"
+  elytra-on: "&a鞘翅飞行已启动"
+  elytra-off: "&c鞘翅飞行已停止"
 
 # 违规检测
 violation:
@@ -38,10 +41,15 @@ violation:
   movement: "移动速度异常"
   rotation: "视角转动异常"
   clicks: "点击速度异常"
+  flight: "飞行作弊"
+  
+flight:
+  detected: "&c检测到飞行! 空中时间: {0}tick (最大允许: {1}tick)"
 
 # 踢出消息
 kick:
-  message: "&c检测到多次作弊行为 ({0}/{1})"
+  message: "&c检测到多次作弊行为 ({0}/{1})\n原因: {2}"
+  broadcast: "&7[反作弊] &c玩家 {0} 被踢出。原因: {1}"
 
 # 点击检测
 clicks:
@@ -52,6 +60,16 @@ clicks:
 ban:
   executed: "&7玩家 &f{0}&7 已被封禁. 原因: &f{1}"
   reason: "检测到作弊行为 (累计被踢出 {0} 次)"
+  info: |
+    &4&l您已被封禁
+    &r
+    &f玩家: &7{player}
+    &f原因: &7{reason}
+    &f时间: &7{date}
+    &f执行者: &7{banned-by}
+    &r
+    &e申诉地址: &bexample.com/appeal
+    &e联系方式: &bsupport@example.com
 
 # 白名单消息
 whitelist:
@@ -72,6 +90,8 @@ maintenance:
   enabled: "&c反作弊维护模式已启用，所有检测已暂停"
   disabled: "&a反作弊维护模式已禁用，检测功能恢复正常"
   status-changed: "维护模式状态已改变: {0}"
+  bypass: "&7[反作弊] &f维护模式启用，跳过检测"
+  check-failed: "维护状态检查失败"
 
 # 更新检测消息
 update:
@@ -86,13 +106,3 @@ elytra:
   enabled: "§a鞘翅飞行检测已禁用"
   disabled: "§c鞘翅飞行检测已启用"
   bypass: "§7[TRAnticheat] §f检测到鞘翅飞行，已跳过检测"
-
-violation:
-  movement: "移动速度异常"
-  rotation: "视角旋转异常"
-  flight: "飞行作弊"
-  log: "在 {0} 世界中的玩家 {1} 因 {2} 被记录违规 ({3}/{4})"
-  detected: "&c检测到违规行为: {0}"
-  
-flight:
-  detected: "&c检测到飞行! 空中时间: {0}tick (最大允许: {1}tick)"
