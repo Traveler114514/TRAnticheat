@@ -47,5 +47,3 @@ whitelist:
   bypass-permissions:
     - "anticheat.bypass"
     - "staff.*"
-    - "bypass.rotation"
-    - "bypass.speed"
