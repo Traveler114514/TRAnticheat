@@ -10,7 +10,7 @@ language:
 
 update:
   available: "&eNew version available! Current: {0} | Latest: {1}"
-  download: "&bDownload at: https://github.com/Traveler114514"
+  download: "&bDownload at: https://github.com/Traveler114514/TRAnticheat"
   latest: "&aYou are using the latest version: {0}"
   dev-version: "&6You are using a development version: {0}"
   failed: "&cFailed to check for updates"
