@@ -422,7 +422,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
      * 检测逻辑
      */
     
-    private boolean checkMovementSpeed(Player player, Location from, Location to) {
+private boolean checkMovementSpeed(Player player, Location from, Location to) {
         Vector vector = to.toVector().subtract(from.toVector());
         
         double horizontal = Math.hypot(vector.getX(), vector.getZ());
@@ -434,19 +434,15 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         double elytraHorizontal = config.getDouble("settings.elytra.max-horizontal-speed", 2.0);
         double elytraVertical = config.getDouble("settings.elytra.max-vertical-speed", 1.5);
         
-        // 考虑服务器延迟和TPS影响
-        double tpsFactor = Math.max(0.5, Math.min(1.5, 20.0 / Bukkit.getServer().getTPS()[0]));
-        double adjustedHorizontalThreshold = maxHorizontal * tpsFactor;
-        double adjustedVerticalThreshold = maxVertical * tpsFactor;
-        
         // 鞘翅飞行特殊处理
         if (player.isGliding()) {
             // 使用专用阈值检查鞘翅飞行
-            return horizontal > (elytraHorizontal * tpsFactor) || 
-                   vertical > (elytraVertical * tpsFactor);
+            return horizontal > elytraHorizontal || 
+                   vertical > elytraVertical;
         }
         
         // 考虑玩家状态
+        double adjustedHorizontalThreshold = maxHorizontal;
         if (player.isSprinting()) {
             adjustedHorizontalThreshold *= 1.3; // 冲刺时增加阈值
         }
@@ -457,7 +453,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         
         // 普通移动检测
         return horizontal > adjustedHorizontalThreshold || 
-               vertical > adjustedVerticalThreshold;
+               vertical > maxVertical;
     }
 
     private boolean checkRotationSpeed(Player player, Location from, Location to) {
@@ -507,7 +503,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         boolean isOnGround = isPlayerOnGround(player);
         
         // 获取之前的地面状态
-        boolean wasOnGround = data.isWasOnGround();
+        boolean wasOnGround = data.isWas
+OnGround();
         data.setWasOnGround(isOnGround);
         
         // 如果玩家在地面上，重置计数器
@@ -726,7 +723,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         return true;
     }
     
-private boolean handleUnbanCommand(CommandSender sender, String[] args) {
+    private boolean handleUnbanCommand(CommandSender sender, String[] args) {
         // 权限检查
         if (!sender.hasPermission("anticheat.traunban")) {
             sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
