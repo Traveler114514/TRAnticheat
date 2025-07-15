@@ -8,6 +8,7 @@ error:
   invalid-uuid: "&c无效的UUID格式: {0}"
   language-missing: "&c找不到语言文件: {0}"
   ban-save: "&c无法保存封禁配置"
+  no-permission: "&c你没有权限执行此命令!"
 
 # 语言相关
 language:
@@ -51,16 +52,6 @@ clicks:
 ban:
   executed: "&7玩家 &f{0}&7 已被封禁. 原因: &f{1}"
   reason: "检测到作弊行为 (累计被踢出 {0} 次)"
-  info: |
-    &4&l您已被封禁
-    &r
-    &f玩家: &7{player}
-    &f原因: &7{reason}
-    &f时间: &7{date}
-    &f执行者: &7{banned-by}
-    &r
-    &e申诉地址: &bexample.com/appeal
-    &e联系方式: &bsupport@example.com
 
 # 白名单消息
 whitelist:
@@ -72,7 +63,10 @@ command:
   baninfo: "&7玩家 &f{0}&7 的封禁信息: {1}"
   not-banned: "&7玩家 &f{0}&7 未被封禁"
   ban: "&7玩家 &f{0}&7 已被封禁"
-  unban: "&7玩家 &f{0}&7 已被解封"
+  unban:
+    success: "&7玩家 &f{0}&7 已被解封"
+    log: "玩家 {0} 已被解封，操作者: {1}"
+    executed: "解封玩家 {0} | 原因: {1}"
 
 maintenance:
   enabled: "&c反作弊维护模式已启用，所有检测已暂停"
