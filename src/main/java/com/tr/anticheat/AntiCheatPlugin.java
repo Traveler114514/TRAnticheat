@@ -877,7 +877,7 @@ private void startCleanupTask() {
         float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
         
         // 标准化角度
-        if (deltaYaw > 180) deltaYaw = 360 - delta极aw;
+        if (deltaYaw > 180) deltaYaw = 360 - deltaaw;
         if (deltaPitch > 180) deltaPitch = 360 - deltaPitch;
         
         // 计算速度(度/秒)
