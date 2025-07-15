@@ -16,6 +16,7 @@ import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
+import org.bukkit.Material;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,7 @@ import java.util.logging.Level;
 public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExecutor {
 
     /* ------------------------- 插件版本配置 ------------------------- */
-    private static final int PLUGIN_VERSION = 105; // 更新版本号
+    private static final int PLUGIN_VERSION = 107; // 更新版本号
     
     /* ------------------------- 远程服务配置 ------------------------- */
     private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
@@ -39,8 +40,16 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     /* ------------------------- 配置参数 ------------------------- */
     private String language;
     private boolean debugMode;
+    private boolean broadcastKicks; // 是否广播踢出消息
     private Set<String> whitelistedWorlds;
     private Set<UUID> whitelistedPlayers;
+    
+    // 检测开关
+    private boolean movementDetectionEnabled;
+    private boolean rotationDetectionEnabled;
+    private boolean flightDetectionEnabled;
+    private boolean clicksDetectionEnabled;
+    private boolean elytraDetectionEnabled;
     
     // 移动检测
     private double maxHorizontalSpeed;
@@ -50,19 +59,17 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private double elytraHorizontalThreshold;
     private double elytraVerticalThreshold;
     
- // 视角检测
+    // 视角检测
     private float maxAngleChange;
     private long rotationCheckInterval;
     
     // 点击检测
-    private boolean clicksEnabled;
     private int maxCps;
     private int clicksCheckInterval;
     private int clicksViolationsToKick;
     
     // 飞行检测
-    private boolean flightDetectionEnabled = true;
-    private int maxAirTime = 80; // 4秒 (20 ticks/秒 * 4秒)
+    private int maxAirTime;
     
     // 通用违规
     private int maxViolations;
@@ -131,7 +138,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         // 7. 注册命令
         getCommand("traban").setExecutor(this);
-        getCommand("traunban").setExecutor(this); // 添加解封命令
+        getCommand("traunban").setExecutor(this);
         
         getLogger().info(getMessage("plugin.enabled", getDescription().getVersion()));
     }
@@ -156,6 +163,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 加载通用设置
         debugMode = config.getBoolean("settings.debug", false);
         maxViolations = config.getInt("settings.violations.max-violations", 10);
+        broadcastKicks = config.getBoolean("settings.broadcast-kick", true);
+        
+        // 加载检测开关
+        movementDetectionEnabled = config.getBoolean("settings.movement.enabled", true);
+        rotationDetectionEnabled = config.getBoolean("settings.rotation.enabled", true);
+        flightDetectionEnabled = config.getBoolean("settings.flight.enabled", true);
+        clicksDetectionEnabled = config.getBoolean("settings.clicks.enabled", true);
+        elytraDetectionEnabled = config.getBoolean("settings.elytra.enabled", true);
         
         // 移动检测
         maxHorizontalSpeed = config.getDouble("settings.movement.max-horizontal-speed", 0.35);
@@ -170,14 +185,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         rotationCheckInterval = config.getLong("settings.rotation.check-interval", 50);
         
         // 点击检测
-        clicksEnabled = config.getBoolean("settings.clicks.enabled", true);
         maxCps = config.getInt("settings.clicks.max-cps", 15);
         clicksCheckInterval = config.getInt("settings.clicks.check-interval", 5);
         clicksViolationsToKick = config.getInt("settings.clicks.violations-to-kick", 3);
         
         // 飞行检测
-        flightDetectionEnabled = config.getBoolean("settings.flight.enabled", true);
-        maxAirTime = config.getInt("settings.flight.max-air-time", 80); // 80 ticks = 4秒
+        maxAirTime = config.getInt("settings.flight.max-air-time", 80);
         
         // 自动封禁
         autoBanEnabled = config.getBoolean("settings.violations.auto-ban.enabled", false);
@@ -195,6 +208,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                 getLogger().warning(getMessage("error.invalid-uuid", uuidStr));
             }
         });
+    }
+    
+    /* ------------------------- 广播踢出消息 ------------------------- */
+    private void broadcastKickMessage(Player player, String reason) {
+        if (broadcastKicks) {
+            String message = getMessage("kick.broadcast", player.getName(), reason);
+            Bukkit.broadcastMessage(message);
+        }
     }
     
     /* ------------------------- 版本检测功能 ------------------------- */
@@ -387,6 +408,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             checkKeyExists("violation.rotation");
             checkKeyExists("violation.flight");
             checkKeyExists("flight.detected");
+            // 新增检查
+            checkKeyExists("kick.message");
+            checkKeyExists("kick.broadcast");
         }
     }
     
@@ -433,14 +457,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             "&f玩家: &7{player}\n" +
             "&f原因: &7{reason}\n" +
             "&f封禁时间: &7{date}\n" +
-            "&f执行者: &7{banned-by}\\n" +
+            "&f执行者: &7{banned-by}\n" +
             "&r\n" +
             "&e此封禁为永久封禁\n" +
             "&r\n" +
             "&6如果您认为这是误封，请通过以下方式申诉:\n" +
-            "&b- 网站: https://traveler.dpdns.org\n" +
+            "&b- 网站: https://traveler114514\n" +
             "&b- QQ群: 315809417\n" +
-            "&b- 邮箱: admin@traveler.dpdns.org\n" +
+            "&b- 邮箱: admin@traveler114514\n" +
             "&r\n" +
             "&7请提供您的游戏ID和封禁时间以便我们处理");
         
@@ -579,8 +603,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         return false;
     }
 
-    /* ------------------------- 定时任务 ------------------------- */
-    private void startCleanupTask() {
+private void startCleanupTask() {
         // 每10分钟清理一次离线玩家数据
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             int before = violationCount.size();
@@ -599,7 +622,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     }
 
     private void startClickCheckTask() {
-        if (!clicksEnabled) return;
+        if (!clicksDetectionEnabled) return;
         
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             // 维护模式时跳过检测
@@ -691,22 +714,22 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         Location to = event.getTo();
         if (to == null) return;
 
-        // 移动速度检测
-        if (checkMovementSpeed(player, from, to)) {
+        // 移动速度检测 (仅当开启时)
+        if (movementDetectionEnabled && checkMovementSpeed(player, from, to)) {
             handleViolation(player, "violation.movement", true);
             event.setTo(lastValidLocations.get(player.getUniqueId()));
             return;
         }
         
-        // 视角检测
-        if (checkRotationSpeed(player, from, to)) {
+        // 视角检测 (仅当开启时)
+        if (rotationDetectionEnabled && checkRotationSpeed(player, from, to)) {
             handleViolation(player, "violation.rotation", true);
             to.setYaw(lastYaw.get(player.getUniqueId()));
             to.setPitch(lastPitch.get(player.getUniqueId()));
             event.setTo(to);
         }
         
-        // 飞行检测 - 放在其他检测之后
+        // 飞行检测 (仅当开启时)
         if (flightDetectionEnabled && checkFlight(player, from, to)) {
             handleViolation(player, "violation.flight", true);
             event.setTo(lastValidLocations.get(player.getUniqueId()));
@@ -716,7 +739,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         updatePlayerData(player);
     }
     
-@EventHandler
+    @EventHandler
     public void onEntityGlide(EntityToggleGlideEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
@@ -745,7 +768,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             return;
         }
         
-        if (!clicksEnabled) return;
+        if (!clicksDetectionEnabled) return;
         
         Player player = event.getPlayer();
         if (shouldBypassCheck(player)) return;
@@ -804,7 +827,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLogin(PlayerLoginEvent event) {
+    public void onPlayerLogin(PlayerLoginevent) {
         // 检查玩家是否被封禁
         if (isBanned(event.getPlayer().getName())) {
             String playerName = event.getPlayer().getName();
@@ -830,8 +853,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         double horizontal = Math.hypot(vector.getX(), vector.getZ());
         double vertical = Math.abs(vector.getY());
         
-        // 鞘翅飞行特殊处理
-        if (player.isGliding()) {
+        // 鞘翅飞行特殊处理 (仅当鞘翅检测开启时)
+        if (elytraDetectionEnabled && player.isGliding()) {
             // 使用专用阈值检查鞘翅飞行
             return horizontal > elytraHorizontalThreshold || vertical > elytraVerticalThreshold;
         }
@@ -877,6 +900,19 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         if (player.getGameMode() == GameMode.CREATIVE || 
             player.getGameMode() == GameMode.SPECTATOR ||
             player.getAllowFlight()) {
+            return false;
+        }
+        
+        // 新增：检查玩家是否在梯子或藤蔓上
+        Material playerMaterial = player.getLocation().getBlock().getType();
+        if (playerMaterial == Material.LADDER || 
+            playerMaterial == Material.VINE || 
+            playerMaterial == Material.SCAFFOLDING ||
+            playerMaterial == Material.WEEPING_VINES ||
+            playerMaterial == Material.TWISTING_VINES ||
+            playerMaterial == Material.CAVE_VINES) {
+            // 重置飞行计数器
+            airTimeCounters.remove(player.getUniqueId());
             return false;
         }
         
@@ -969,7 +1005,13 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 超过阈值踢出
         if (count >= maxViolations) {
             Bukkit.getScheduler().runTask(this, () -> {
-                player.kickPlayer(getMessage("kick.message", count, maxViolations));
+                // 获取具体原因消息
+                String reasonMsg = getMessage(reasonKey);
+                // 广播踢出消息
+                broadcastKickMessage(player, reasonMsg);
+                // 执行踢出
+                player.kickPlayer(getMessage("kick.message", count, maxViolations, reasonMsg));
+                
                 violationCount.remove(uuid);
                 
                 // 记录踢出次数并检查封禁
@@ -1003,7 +1045,13 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 超过阈值踢出
         if (violations >= clicksViolationsToKick) {
             Bukkit.getScheduler().runTask(this, () -> {
-                player.kickPlayer(getMessage("clicks.kick", cps));
+                // 获取具体原因消息
+                String reasonMsg = getMessage("clicks.kick", cps);
+                // 广播踢出消息
+                broadcastKickMessage(player, reasonMsg);
+                // 执行踢出
+                player.kickPlayer(reasonMsg);
+                
                 clickViolations.remove(uuid);
                 
                 // 记录踢出次数并检查封禁
@@ -1032,6 +1080,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             
             // 记录到日志
             getLogger().info(getMessage("ban.executed", player.getName(), reason));
+        }
+    }
+
+    /* ------------------------- 广播踢出消息 ------------------------- */
+    private void broadcastKickMessage(Player player, String reason) {
+        if (broadcastKicks) {
+            String message = getMessage("kick.broadcast", player.getName(), reason);
+            Bukkit.broadcastMessage(message);
         }
     }
 
@@ -1134,7 +1190,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     }
     
     /**
-     * 获取格式化版本号
+     * 获取格式化版本
      */
     public String getFormattedPluginVersion() {
         return formatVersion(PLUGIN_VERSION);
