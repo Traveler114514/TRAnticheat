@@ -1,88 +1,94 @@
-# Plugin messages
+# General messages
 plugin:
   enabled: "&aAntiCheat plugin enabled! Version: {0}"
-  disabled: "&cAntiCheat plugin disabled!"
-
-# Error messages
-error:
-  invalid-uuid: "&cInvalid UUID format: {0}"
-  language-missing: "&cLanguage file not found for: {0}"
-  ban-save: "&cFailed to save ban configuration"
-
-# Language related
+  disabled: "&cAntiCheat plugin disabled"
+  reloaded: "&aConfiguration reloaded"
+  
 language:
-  loaded: "&7Loaded language: &f{0}&7 with &f{1}&7 messages"
-  reloaded: "&7Language reloaded: &f{0}"
+  loaded: "&aLanguage file loaded: {0} (contains {1} messages)"
+  reloaded: "&aLanguage file reloaded"
 
-# Cleanup task
+update:
+  available: "&eNew version available! Current: {0} | Latest: {1}"
+  download: "&bDownload at: https://github.com/Traveler114514"
+  latest: "&aYou are using the latest version: {0}"
+  dev-version: "&6You are using a development version: {0}"
+  failed: "&cFailed to check for updates"
+
+maintenance:
+  enabled: "&cServer in maintenance mode, anti-cheat detection paused"
+  disabled: "&aServer maintenance ended, anti-cheat detection resumed"
+  bypass: "&eMaintenance mode active, bypassing detection"
+  status-changed: "Maintenance mode status changed: {0}"
+  check-failed: "Failed to check maintenance status"
+
+error:
+  ban-save: "Failed to save ban configuration"
+  invalid-uuid: "Invalid UUID: {0}"
+  language-missing: "Missing default language file: messages_{0}.yml"
+
 cleanup:
-  removed: "&7Cleaned up: Removed &f{0}&7 violation records and &f{1}&7 kick records"
+  removed: "Cleaned up {0} violation counts and {1} kick counts"
 
-# Player related
 player:
-  join: "&7Player &f{0}&7 joined with &f{1}&7 previous kicks"
-  kicked: "&7Player &f{0}&7 kicked. Total kicks: &f{1}/{2}"
-  banned: "&7Player &f{0}&7 has been banned"
+  join: "Player {0} joined (kicked {1} times)"
+  kicked: "Player {0} has been kicked {1} times (ban threshold: {2})"
 
-# Debug messages
-debug:
-  cps: "&7[AntiCheat] &fCurrent CPS: &c{0}"
-  teleport: "&7[AntiCheat] &fTeleported back to last valid location"
-  rotation: "&7[AntiCheat] &fRotation reset"
+ban:
+  executed: "Banned player {0} | Reason: {1}"
+  reason: "Multiple cheating violations detected (kicked {0} times)"
 
-# Violation detection
+# Violation messages
 violation:
-  detected: "&c[AntiCheat] &7Detected: &f{0}"
-  log: "[{0}] {1} violation: {2} ({3}/{4})"
-  movement: "Movement speed violation"
-  rotation: "Rotation speed violation"
-  clicks: "Click speed violation"
-
-# Kick messages
-kick:
-  message: "&cDetected multiple cheating attempts ({0}/{1})"
+  movement: "Abnormal movement speed"
+  rotation: "Abnormal rotation speed"
+  flight: "Flight hacking"
+  log: "Player {1} in {0} world recorded violation for {2} ({3}/{4})"
+  detected: "&cViolation detected: {0}"
 
 # Click detection
 clicks:
-  violation: "{0} abnormal clicks: {1} CPS ({2}/{3})"
-  kick: "&cAbnormal click behavior detected (CPS: {0})"
+  violation: "Player {0} has high click speed: {1} CPS (violations: {2}/{3})"
+  kick: "&cClick speed too high! Detected {0} CPS"
 
-# Ban system
-ban:
-  executed: "&7Player &f{0}&7 banned. Reason: &f{1}"
-  reason: "Cheating detected (kicked {0} times)"
-  info: |
-    &4&lYOU ARE BANNED
-    &r
-    &fPlayer: &7{player}
-    &fReason: &7{reason}
-    &fDate: &7{date}
-    &fBanned by: &7{banned-by}
-    &r
-    &eAppeal at: &bexample.com/appeal
-    &eContact: &bsupport@example.com
+# Flight detection
+flight:
+  detected: "&cFlight detected! Air time: {0}tick (max allowed: {1}tick)"
 
-# Whitelist messages
-whitelist:
-  bypass: "&7[AntiCheat] &fChecks bypassed due to whitelist status"
+# Kick messages
+kick:
+  message: "&cYou have been kicked! Violations: {0}/{1}"
 
-# Commands
+# Debug messages
+debug:
+  teleport: "&ePosition rolled back"
+  cps: "&eCurrent CPS: {0}"
+  elytra-on: "&aElytra flight activated"
+  elytra-off: "&cElytra flight deactivated"
+
+# Command messages
 command:
-  reload: "&7Configuration and language files reloaded"
-  baninfo: "&7Ban info for &f{0}&7: {1}"
-  not-banned: "&7Player &f{0}&7 is not banned"
-  ban: "&7Player &f{0}&7 has been banned"
-  unban: "&7Player &f{0}&7 has been unbanned"
+  not-banned: "Player {0} is not banned"
+  unban:
+    success: "&aUnbanned player {0} | Reason: {1}"
+    not-banned: "&cPlayer {0} is not banned"
+    log: "Player {0} has been unbanned | Reason: {1} | By: {2}"
+    executed: "Unbanned player {0} | Reason: {1}"
 
-maintenance:
-  enabled: "&c Anti cheating maintenance mode has been enabled, all detections have been paused"
-  disabled: 'Anti cheating maintenance mode disabled, detection function restored to normal'
-  status-changed: "Maintenance mode status has changed: {0}"
-
-# Update messages
-update:
-  available: "&eUpdate available! Current: &6{0}&e, Latest: &6{1}"
-  latest: "&aYou are using the latest version: &6{0}"
-  dev-version: "&dYou are using a development version: &6{0}"
-  failed: "&cVersion check failed"
-  download: "&eDownload at &bhttps://github.com/Traveler114514/TRAnticheat/releases/"
+# Ban message template
+ban-message: |
+  &4&lYou have been banned from the server!
+  &r
+  &fPlayer: &7{player}
+  &fReason: &7{reason}
+  &fBanned on: &7{date}
+  &fBanned by: &7{banned-by}
+  &r
+  &eThis is a permanent ban
+  &r
+  &6If you believe this is a mistake, please appeal via:
+  &b- Website: https://traveler.dpdns.org
+  &b- QQ Group: 315809417
+  &b- Email: admin@traveler.dpdns.org
+  &r
+  &7Please provide your in-game name and ban time for processing
