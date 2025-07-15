@@ -26,6 +26,7 @@ error:
   ban-save: "Failed to save ban configuration"
   invalid-uuid: "Invalid UUID: {0}"
   language-missing: "Missing default language file: messages_{0}.yml"
+  no-permission: "&cYou don't have permission to do this!"
 
 cleanup:
   removed: "Cleaned up {0} violation counts and {1} kick counts"
@@ -69,26 +70,9 @@ debug:
 # Command messages
 command:
   not-banned: "Player {0} is not banned"
+  ban: "Player {0} has been banned"
   unban:
     success: "&aUnbanned player {0} | Reason: {1}"
     not-banned: "&cPlayer {0} is not banned"
     log: "Player {0} has been unbanned | Reason: {1} | By: {2}"
     executed: "Unbanned player {0} | Reason: {1}"
-
-# Ban message template
-ban-message: |
-  &4&lYou have been banned from the server!
-  &r
-  &fPlayer: &7{player}
-  &fReason: &7{reason}
-  &fBanned on: &7{date}
-  &fBanned by: &7{banned-by}
-  &r
-  &eThis is a permanent ban
-  &r
-  &6If you believe this is a mistake, please appeal via:
-  &b- Website: https://traveler.dpdns.org
-  &b- QQ Group: 315809417
-  &b- Email: admin@traveler.dpdns.org
-  &r
-  &7Please provide your in-game name and ban time for processing
