@@ -981,7 +981,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         if (!autoBanEnabled) return;
         
         UUID uuid = player.getUniqueId();
-        int kicks = kickCount.merge(uuid, 极, Integer::sum);
+        int kicks = kickCount.merge(uuid, 1, Integer::sum);
         
         // 记录日志
         getLogger().info(getMessage("player.kicked", player.getName(), kicks, kicksBeforeBan));
