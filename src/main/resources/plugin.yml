@@ -17,12 +17,20 @@ commands:
     description: 重置玩家的违规计数
     usage: /anticheat-reset [player]
     permission: anticheat.admin
+  traunban:
+    description: 解封指定的玩家
+    usage: /traunban <玩家>
+    permission: anticheat.traunban
+    permission-message: "&c你没有权限使用此命令！"
 permissions:
   anticheat.traban:
     description: 允许使用 /traban 命令
     default: op
   anticheat.admin:
     description: 允许访问反作弊管理命令
+    default: op
+  anticheat.traunban:
+    description: 允许使用 /traunban 命令
     default: op
   anticheat.bypass.speed:
     description: 绕过速度检测
