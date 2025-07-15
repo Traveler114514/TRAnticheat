@@ -87,13 +87,13 @@ update:
   failed: "&c版本检测失败"
   download: "&e请前往 &bhttps://github.com/Traveler114514/TRAnticheat/releases/ &e下载更新"
 
-# 在 messages_zh_cn.yml 中添加
+# 鞘翅飞行检测消息
 elytra:
   enabled: "§a鞘翅飞行检测已禁用"
   disabled: "§c鞘翅飞行检测已启用"
-  bypass: "§7[反作弊] §f检测到鞘翅飞行，已跳过检测"
+  bypass: "§7[TRAnticheat] §f检测到鞘翅飞行，已跳过检测"
 
-# messages_zh_cn.yml
+飞行
 violation:
   flight: "飞行作弊"
   
