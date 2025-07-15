@@ -1,49 +1,62 @@
-# 语言设置
+# 反作弊插件配置
 language: zh_cn
 
-# 通用设置
 settings:
+  # 调试模式
   debug: false
+  # 飞行检测
+  flight:
+    enabled: true # 是否启用飞行检测
+    max-air-time: 80 # 最大空中时间 (tick)，20 tick = 1秒
+  # 鞘翅设置
+  elytra:
+    exemption: true  # 是否豁免鞘翅检测（推荐true）
+    max-horizontal-speed: 2.0 # 水平速度阈值
+    max-vertical-speed: 1.5   # 垂直速度阈值
+    
+  # 移动检测设置
+  movement:
+    max-horizontal-speed: 0.90 # 横向速度检测
+    max-vertical-speed: 9999.0 #垂直不检测
+    check-jump-boost: true
+    check-ground-speed: true
+  
+  # 视角检测设置
+  rotation:
+    max-angle-change: 1350
+    check-interval: 15 # 毫秒
+    check-pitch: true
+  
+  # 点击检测设置
+  clicks:
+    enabled: true
+    max-cps: 18 # 每秒最大点击次数
+    check-interval: 1 # 检测间隔(秒)
+    violations-to-kick: 2 # 触发多少次后踢出
+  
+  # 违规处理设置
   violations:
     max-violations: 10
+    violation-expire: 60 # 分钟
+    
+    # 自动封禁配置
     auto-ban:
       enabled: true
-      kicks-before-ban: 3
+      kicks-before-ban: 3 # 被踢出多少次后封禁
+  
+  # 调试模式
+  debug: false
+  log-violations: true
 
-# 移动检测
-movement:
-  max-horizontal-speed: 0.90
-  max-vertical-speed: 114514.00
-
-# 鞘翅专用阈值
-elytra:
-  max-horizontal-speed: 99999.00
-  max-vertical-speed: 99999.00
-
-# 视角检测
-rotation:
-  max-angle-change: 1500
-  check-interval: 15
-
-# 点击检测
-clicks:
-  enabled: true
-  max-cps: 17
-  check-interval: 5
-  violations-to-kick: 3
-
-# 飞行检测
-flight:
-  enabled: true
-  max-air-time: 100 #这里是tick值，20tick=1秒
-
-# 白名单
+# 白名单配置
 whitelist:
+  players: []
   worlds:
-    - world_creative
-    - world_minigames
-  players:
-    - "" # UUID
+    - "creative_world"
+    - "minigame_arena"
+  
+  # 忽略的权限节点
   bypass-permissions:
-    - "anticheat.bypass"
-    - "staff.*"
+    - "anticheat.bypass.speed"
+    - "anticheat.bypass.rotation"
+    - "anticheat.bypass.clicks"
