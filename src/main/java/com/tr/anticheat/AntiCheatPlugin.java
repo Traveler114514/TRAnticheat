@@ -1,6 +1,7 @@
 package com.tr.anticheat;
 
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,7 +29,7 @@ import java.util.logging.Level;
 public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExecutor {
 
     /* ------------------------- 插件版本配置 ------------------------- */
-    private static final int PLUGIN_VERSION = 103;
+    private static final int PLUGIN_VERSION = 105; // 更新版本号
     
     /* ------------------------- 远程服务配置 ------------------------- */
     private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
@@ -95,6 +96,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     
     // 飞行检测数据
     private final ConcurrentHashMap<UUID, Integer> airTimeCounters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Boolean> wasOnGround = new ConcurrentHashMap<>();
     
     // 踢出次数记录
     private final ConcurrentHashMap<UUID, Integer> kickCount = new ConcurrentHashMap<>();
@@ -377,12 +379,12 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         if (debugMode) {
             getLogger().info(getMessage("language.loaded", language, messages.size()));
             
-            // 检查更新相关键是否存在
-            checkKeyExists("update.available");
-            checkKeyExists("update.download");
-            checkKeyExists("update.latest");
-            checkKeyExists("update.dev-version");
-            checkKeyExists("update.failed");
+            // 检查关键语言键是否存在
+            checkKeyExists("violation.log");
+            checkKeyExists("violation.movement");
+            checkKeyExists("violation.rotation");
+            checkKeyExists("violation.flight");
+            checkKeyExists("flight.detected");
         }
     }
     
@@ -391,6 +393,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             getLogger().info("找到语言键: " + key + " = " + messages.get(key));
         } else {
             getLogger().warning("缺少语言键: " + key);
+            // 添加默认值
+            messages.put(key, key);
         }
     }
     
@@ -484,10 +488,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         }
     }
     
-    /**
-     * 生成封禁消息
-     */
-    private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
+private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
         String template = banConfig.getString("ban-message", 
             "&4&l您已被服务器封禁\n" +
             "&r\n" +
@@ -558,7 +559,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         }, 20 * 60 * 10, 20 * 60 * 10);
     }
 
- private void startClickCheckTask() {
+    private void startClickCheckTask() {
         if (!clicksEnabled) return;
         
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -666,7 +667,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             event.setTo(to);
         }
         
-        // 飞行检测
+        // 飞行检测 - 放在其他检测之后
         if (flightDetectionEnabled && checkFlight(player, from, to)) {
             handleViolation(player, "violation.flight", true);
             event.setTo(lastValidLocations.get(player.getUniqueId()));
@@ -686,6 +687,11 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
                 } else {
                     player.sendMessage("§c鞘翅飞行已停止");
                 }
+            }
+            
+            // 当玩家停止使用鞘翅时，重置飞行计数器
+            if (!event.isGliding()) {
+                airTimeCounters.remove(player.getUniqueId());
             }
         }
     }
@@ -729,6 +735,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         // 初始化飞行检测数据
         airTimeCounters.put(uuid, 0);
+        wasOnGround.put(uuid, isPlayerOnGround(player));
         
         // 初始化踢出计数
         kickCount.putIfAbsent(uuid, 0);
@@ -753,7 +760,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         violationCount.remove(uuid);
         clickRecords.remove(uuid);
         clickViolations.remove(uuid);
-        airTimeCounters.remove(uuid); // 清理飞行检测数据
+        airTimeCounters.remove(uuid);
+        wasOnGround.remove(uuid);
     }
     
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -833,25 +841,31 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             return false;
         }
         
+        // 获取玩家UUID
+        UUID uuid = player.getUniqueId();
+        
         // 检查玩家是否在地面上
-        boolean wasOnGround = from.getBlock().getRelative(BlockFace.DOWN).getType().isSolid();
-        boolean isOnGround = to.getBlock().getRelative(BlockFace.DOWN).getType().isSolid();
+        boolean isOnGround = isPlayerOnGround(player);
+        
+        // 获取之前的地面状态
+        boolean wasOnGround = this.wasOnGround.getOrDefault(uuid, false);
+        this.wasOnGround.put(uuid, isOnGround);
         
         // 如果玩家在地面上，重置计数器
         if (isOnGround) {
-            airTimeCounters.remove(player.getUniqueId());
+            airTimeCounters.remove(uuid);
             return false;
         }
         
         // 如果玩家刚从地面跳起，初始化计数器
         if (wasOnGround && !isOnGround) {
-            airTimeCounters.put(player.getUniqueId(), 1);
+            airTimeCounters.put(uuid, 1);
             return false;
         }
         
         // 增加空中时间计数
-        int airTime = airTimeCounters.getOrDefault(player.getUniqueId(), 0) + 1;
-        airTimeCounters.put(player.getUniqueId(), airTime);
+        int airTime = airTimeCounters.getOrDefault(uuid, 0) + 1;
+        airTimeCounters.put(uuid, airTime);
         
         // 检查是否超过最大空中时间
         if (airTime > maxAirTime) {
@@ -863,6 +877,28 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         return false;
     }
+    
+    /**
+     * 更精确的玩家地面检测
+     */
+    private boolean isPlayerOnGround(Player player) {
+        Location loc = player.getLocation();
+        
+        // 检查玩家脚下方块是否固体
+        Block blockUnder = loc.getBlock().getRelative(BlockFace.DOWN);
+        if (blockUnder.getType().isSolid()) {
+            return true;
+        }
+        
+        // 检查玩家位置下方0.5格是否有方块
+        Location below = loc.clone().subtract(0, 0.5, 0);
+        if (below.getBlock().getType().isSolid()) {
+            return true;
+        }
+        
+        // 使用Bukkit的isOnGround方法作为后备
+        return player.isOnGround();
+    }
 
     /* ------------------------- 违规处理 ------------------------- */
     private void handleViolation(Player player, String reasonKey, boolean rollback) {
@@ -871,12 +907,16 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 增加违规计数
         int count = violationCount.merge(uuid, 1, Integer::sum);
         
-        // 记录日志
+        // 记录日志 - 使用正确的语言键
         if (getConfig().getBoolean("settings.log-violations", true)) {
+            // 获取违规原因的消息
+            String reasonMsg = getMessage(reasonKey);
+            
+            // 使用正确的语言键和参数
             getLogger().warning(getMessage("violation.log", 
                 player.getWorld().getName(),
                 player.getName(),
-                getMessage(reasonKey),
+                reasonMsg,
                 count,
                 maxViolations
             ));
