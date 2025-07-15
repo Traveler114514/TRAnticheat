@@ -1,32 +1,34 @@
 name: TRAntiCheat
-version: 1.0.5
 main: com.tr.anticheat.AntiCheatPlugin
+version: 1.0.6
 api-version: 1.16
+description: Advanced anti-cheat system for Minecraft servers
 author: Traveler114514
-description: Advanced anti-cheat solution for Bukkit servers
+website: https://github.com/Traveler114514
+
 commands:
   traban:
-    description: 封禁指定的玩家
-    usage: /traban <玩家> <理由>
+    description: Ban a player using the custom ban system
+    usage: /traban <player> <reason>
     permission: anticheat.traban
-    permission-message: "&c你没有权限使用此命令！"
-  anticheat-reload:
-    description: 重载反作弊插件配置
-    permission: anticheat.admin
-  anticheat-reset:
-    description: 重置玩家的违规计数
-    usage: /anticheat-reset [player]
-    permission: anticheat.admin
+    permission-message: "&c你没有权限使用这个命令!"
+  
+  traunban:
+    description: Unban a player from the custom ban system
+    usage: /traunban <player> [reason]
+    permission: anticheat.traunban
+    permission-message: "&c你没有权限使用这个命令!"
+
 permissions:
   anticheat.traban:
-    description: 允许使用 /traban 命令
+    description: Allows banning players using the custom ban system
+    default: op
+  anticheat.traunban:
+    description: Allows unbanning players from the custom ban system
     default: op
   anticheat.admin:
-    description: 允许访问反作弊管理命令
+    description: Access to anti-cheat admin features
     default: op
-  anticheat.bypass.speed:
-    description: 绕过速度检测
-    default: false
-  anticheat.bypass.rotation:
-    description: 绕过视角检测
+  anticheat.bypass:
+    description: Bypass anti-cheat detections
     default: false
