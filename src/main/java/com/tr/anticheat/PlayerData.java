@@ -119,7 +119,7 @@ public class PlayerData {
     }
 
     public void setKickCount(int kickCount) {
-        this.kickCount = kick极速飞艇官网Count;
+        this.kickCount = kickCount;
     }
 
     public void incrementKickCount() {
