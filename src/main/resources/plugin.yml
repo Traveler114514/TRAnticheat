@@ -1,36 +1,52 @@
 name: TRAntiCheat
-version: 1.0.5
+version: 1.0.6
 main: com.tr.anticheat.AntiCheatPlugin
 api-version: 1.16
 author: Traveler114514
 description: Advanced anti-cheat solution for Bukkit servers
+
+# 命令定义
 commands:
   traban:
     description: 封禁指定的玩家
     usage: /traban <玩家> <理由>
     permission: anticheat.traban
     permission-message: "&c你没有权限使用此命令！"
-  anticheat-reload:
-    description: 重载反作弊插件配置
-    permission: anticheat.admin
-  anticheat-reset:
-    description: 重置玩家的违规计数
-    usage: /anticheat-reset [player]
-    permission: anticheat.admin
+  
   traunban:
     description: 解封指定的玩家
     usage: /traunban <玩家>
     permission: anticheat.traunban
     permission-message: "&c你没有权限使用此命令！"
+  
+  anticheat-reload:
+    description: 重载反作弊插件配置
+    usage: /anticheat-reload
+    permission: anticheat.admin
+    permission-message: "&c你没有权限使用此命令！"
+  
+  anticheat-reset:
+    description: 重置玩家的违规计数
+    usage: /anticheat-reset [player]
+    permission: anticheat.admin
+    permission-message: "&c你没有权限使用此命令！"
+  
+  anticheat-version:
+    description: 检查插件版本
+    usage: /anticheat-version
+    permission: anticheat.admin
+    permission-message: "&c你没有权限使用此命令！"
+
+# 权限定义
 permissions:
   anticheat.traban:
     description: 允许使用 /traban 命令
     default: op
-  anticheat.admin:
-    description: 允许访问反作弊管理命令
-    default: op
   anticheat.traunban:
     description: 允许使用 /traunban 命令
+    default: op
+  anticheat.admin:
+    description: 允许访问反作弊管理命令
     default: op
   anticheat.bypass.speed:
     description: 绕过速度检测
@@ -38,3 +54,21 @@ permissions:
   anticheat.bypass.rotation:
     description: 绕过视角检测
     default: false
+  anticheat.bypass.clicks:
+    description: 绕过点击检测
+    default: false
+  anticheat.bypass.flight:
+    description: 绕过飞行检测
+    default: false
+  anticheat.bypass.elytra:
+    description: 绕过鞘翅检测
+    default: false
+  anticheat.bypass.all:
+    description: 绕过所有检测
+    default: op
+    children:
+      anticheat.bypass.speed: true
+      anticheat.bypass.rotation: true
+      anticheat.bypass.clicks: true
+      anticheat.bypass.flight: true
+      anticheat.bypass.elytra: true
