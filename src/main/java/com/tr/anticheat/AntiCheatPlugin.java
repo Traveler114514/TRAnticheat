@@ -975,7 +975,7 @@ private void startCleanupTask() {
         return player.isOnGround();
     }
 
-    /* ------------------------- 违规处理 ------------------------- */
+/* ------------------------- 违规处理 ------------------------- */
     private void handleViolation(Player player, String reasonKey, boolean rollback) {
         UUID uuid = player.getUniqueId();
         
@@ -1007,8 +1007,6 @@ private void startCleanupTask() {
             Bukkit.getScheduler().runTask(this, () -> {
                 // 获取具体原因消息
                 String reasonMsg = getMessage(reasonKey);
-                // 广播踢出消息
-                broadcastKickMessage(player, reasonMsg);
                 // 执行踢出
                 player.kickPlayer(getMessage("kick.message", count, maxViolations, reasonMsg));
                 
@@ -1047,8 +1045,6 @@ private void startCleanupTask() {
             Bukkit.getScheduler().runTask(this, () -> {
                 // 获取具体原因消息
                 String reasonMsg = getMessage("clicks.kick", cps);
-                // 广播踢出消息
-                broadcastKickMessage(player, reasonMsg);
                 // 执行踢出
                 player.kickPlayer(reasonMsg);
                 
@@ -1277,4 +1273,3 @@ private void startCleanupTask() {
         
         return true;
     }
-}
