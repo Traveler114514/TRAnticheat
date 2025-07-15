@@ -826,8 +826,8 @@ private void startCleanupTask() {
         wasOnGround.remove(uuid);
     }
     
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerLogin(PlayerLoginevent) {
+@EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerLogin(PlayerLoginEvent event) {
         // 检查玩家是否被封禁
         if (isBanned(event.getPlayer().getName())) {
             String playerName = event.getPlayer().getName();
@@ -877,7 +877,7 @@ private void startCleanupTask() {
         float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
         
         // 标准化角度
-        if (deltaYaw > 180) deltaYaw = 360 - deltaYaw;
+        if (deltaYaw > 180) deltaYaw = 360 - deltaaw;
         if (deltaPitch > 180) deltaPitch = 360 - deltaPitch;
         
         // 计算速度(度/秒)
@@ -1190,7 +1190,7 @@ private void startCleanupTask() {
     }
     
     /**
-     * 获取格式化版本
+     * 获取格式化版本号
      */
     public String getFormattedPluginVersion() {
         return formatVersion(PLUGIN_VERSION);
