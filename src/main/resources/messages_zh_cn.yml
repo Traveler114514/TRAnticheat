@@ -68,6 +68,11 @@ whitelist:
 
 # 命令
 command:
+  unban:
+    success: "&a已解封玩家 {0} | 理由: {1}"
+    not-banned: "&c玩家 {0} 未被封禁"
+    log: "玩家 {0} 已被解封 | 理由: {1} | 执行者: {2}"
+    executed: "已解封玩家 {0} | 理由: {1}"
   reload: "&7配置和语言文件已重新加载"
   baninfo: "&7玩家 &f{0}&7 的封禁信息: {1}"
   not-banned: "&7玩家 &f{0}&7 未被封禁"
