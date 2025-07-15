@@ -373,3 +373,14 @@ public class DetectionManager implements Listener {
         
         // 权限检查
         for (String perm : plugin.getConfig().getStringList("whitelist.bypass-permissions")) {
+            if (player.hasPermission(perm)) {
+                return true;
+            }
+        }
+        
+        // 创造模式/飞行玩家
+        return player.getGameMode() == GameMode.CREATIVE 
+            || player.getGameMode() == GameMode.SPECTATOR
+            || player.getAllowFlight();
+    }
+}
