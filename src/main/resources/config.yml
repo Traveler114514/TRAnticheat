@@ -22,8 +22,8 @@ elytra:
 
 # 视角检测
 rotation:
-  max-angle-change: 30.0
-  check-interval: 50
+  max-angle-change: 1500
+  check-interval: 15
 
 # 点击检测
 clicks:
