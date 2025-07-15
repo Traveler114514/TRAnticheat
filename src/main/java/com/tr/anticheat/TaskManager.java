@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TaskManager {
     private final AntiCheatPlugin plugin;
