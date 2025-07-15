@@ -34,6 +34,7 @@ cleanup:
 player:
   join: "Player {0} joined (kicked {1} times)"
   kicked: "Player {0} has been kicked {1} times (ban threshold: {2})"
+  banned: "Player {0} has been banned"
 
 ban:
   executed: "Banned player {0} | Reason: {1}"
@@ -47,18 +48,19 @@ violation:
   log: "Player {1} in {0} world recorded violation for {2} ({3}/{4})"
   detected: "&cViolation detected: {0}"
 
+# Flight detection
+flight:
+  detected: "&cFlight detected! Air time: {0}tick (max allowed: {1}tick)"
+
 # Click detection
 clicks:
   violation: "Player {0} has high click speed: {1} CPS (violations: {2}/{3})"
   kick: "&cClick speed too high! Detected {0} CPS"
 
-# Flight detection
-flight:
-  detected: "&cFlight detected! Air time: {0}tick (max allowed: {1}tick)"
-
 # Kick messages
 kick:
-  message: "&cYou have been kicked! Violations: {0}/{1}"
+  message: "&cYou have been kicked! Violations: {0}/{1}\nReason: {2}"
+  broadcast: "&7[AntiCheat] &cPlayer {0} has been kicked. Reason: {1}"
 
 # Debug messages
 debug:
@@ -70,9 +72,36 @@ debug:
 # Command messages
 command:
   not-banned: "Player {0} is not banned"
-  ban: "Player {0} has been banned"
   unban:
-    success: "&aUnbanned player {0} | Reason: {1}"
-    not-banned: "&cPlayer {0} is not banned"
-    log: "Player {0} has been unbanned | Reason: {1} | By: {2}"
+    success: "&aUnbanned player {0}"
+    log: "Player {0} has been unbanned | By: {1}"
     executed: "Unbanned player {0} | Reason: {1}"
+  baninfo: "Player {0} ban info: {1}"
+
+# Elytra messages
+elytra:
+  enabled: "&aElytra detection disabled"
+  disabled: "&cElytra detection enabled"
+  bypass: "&7[AntiCheat] &fElytra flight detected, bypassing checks"
+
+# Ban message template
+ban-message: |
+  &4&lYou have been banned from the server!
+  &r
+  &fPlayer: &7{player}
+  &fReason: &7{reason}
+  &fBanned on: &7{date}
+  &fBanned by: &7{banned-by}
+  &r
+  &eThis is a permanent ban
+  &r
+  &6If you believe this is a mistake, please appeal via:
+  &b- Website: https://traveler.dpdns.org
+  &b- QQ Group: 315809417
+  &b- Email: admin@traveler.dpdns.org
+  &r
+  &7Please provide your in-game name and ban time for processing
+
+# Whitelist messages
+whitelist:
+  bypass: "&7[AntiCheat] &fBypassing detection due to whitelist status"
