@@ -4,35 +4,37 @@ language: zh_cn
 settings:
   # 调试模式
   debug: false
-  # 飞行检测
-  flight:
-    enabled: true # 是否启用飞行检测
-    max-air-time: 80 # 最大空中时间 (tick)，20 tick = 1秒
-  # 鞘翅设置
-  elytra:
-    exemption: true  # 是否豁免鞘翅检测（推荐true）
-    max-horizontal-speed: 2.0 # 水平速度阈值
-    max-vertical-speed: 1.5   # 垂直速度阈值
-    
-  # 移动检测设置
+  # 踢出广播
+  broadcast-kick: true  # 是否广播踢出消息
+  
+  # 检测开关
   movement:
+    enabled: true # 移动检测开关
     max-horizontal-speed: 0.90 # 横向速度检测
     max-vertical-speed: 9999.0 #垂直不检测
     check-jump-boost: true
     check-ground-speed: true
   
-  # 视角检测设置
   rotation:
+    enabled: true # 视角检测开关
     max-angle-change: 1350
     check-interval: 15 # 毫秒
     check-pitch: true
   
-  # 点击检测设置
   clicks:
-    enabled: true
+    enabled: true # 点击检测开关
     max-cps: 18 # 每秒最大点击次数
     check-interval: 1 # 检测间隔(秒)
     violations-to-kick: 2 # 触发多少次后踢出
+  
+  flight:
+    enabled: true # 飞行检测开关
+    max-air-time: 80 # 最大空中时间 (tick)，20 tick = 1秒
+  
+  elytra:
+    enabled: false # 鞘翅检测开关
+    max-horizontal-speed: 2.0 # 水平速度阈值
+    max-vertical-speed: 1.5   # 垂直速度阈值
   
   # 违规处理设置
   violations:
@@ -44,8 +46,7 @@ settings:
       enabled: true
       kicks-before-ban: 3 # 被踢出多少次后封禁
   
-  # 调试模式
-  debug: false
+  # 日志记录
   log-violations: true
 
 # 白名单配置
@@ -60,3 +61,5 @@ whitelist:
     - "anticheat.bypass.speed"
     - "anticheat.bypass.rotation"
     - "anticheat.bypass.clicks"
+    - "anticheat.bypass.flight"
+    - "anticheat.bypass.elytra"
