@@ -31,7 +31,7 @@ import java.util.logging.Level;
 public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExecutor {
 
     /* ------------------------- 插件版本配置 ------------------------- */
-    private static final int PLUGIN_VERSION = 107; // 更新版本号
+    private static final int PLUGIN_VERSION = 106; // 更新版本号
     
     /* ------------------------- 远程服务配置 ------------------------- */
     private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/FileCloud/refs/heads/main/TRAnticheat/version.txt";
