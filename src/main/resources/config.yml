@@ -2,10 +2,12 @@
 language: zh_cn
 
 settings:
-#飞行设置
+  # 调试模式
+  debug: false
+  # 飞行检测
   flight:
     enabled: true # 是否启用飞行检测
-    max-air-time: 100 # 最大空中时间 (tick)，20 tick = 1秒
+    max-air-time: 80 # 最大空中时间 (tick)，20 tick = 1秒
   # 鞘翅设置
   elytra:
     exemption: true  # 是否豁免鞘翅检测（推荐true）
