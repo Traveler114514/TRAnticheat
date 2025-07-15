@@ -42,10 +42,10 @@ public class DetectionManager implements Listener {
 
     public DetectionManager(AntiCheatPlugin plugin) {
         this.plugin = plugin;
-        loadConfig();
+        reloadConfig();
     }
 
-    public void loadConfig() {
+    public void reloadConfig() {
         // 从主插件加载配置
         maxHorizontalSpeed = plugin.getConfig().getDouble("settings.movement.max-horizontal-speed", 0.35);
         maxVerticalSpeed = plugin.getConfig().getDouble("settings.movement.max-vertical-speed", 0.45);
@@ -74,6 +74,19 @@ public class DetectionManager implements Listener {
                 plugin.getLogger().warning(plugin.getLanguageManager().getMessage("error.invalid-uuid", uuidStr));
             }
         });
+        
+        if (plugin.getConfig().getBoolean("settings.debug", false)) {
+            plugin.getLogger().info("配置已重载:");
+            plugin.getLogger().info("水平移动阈值: " + maxHorizontalSpeed);
+            plugin.getLogger().info("垂直移动阈值: " + maxVerticalSpeed);
+            plugin.getLogger().info("鞘翅水平阈值: " + elytraHorizontalThreshold);
+            plugin.getLogger().info("鞘翅垂直阈值: " + elytraVerticalThreshold);
+            plugin.getLogger().info("视角变化阈值: " + maxAngleChange);
+            plugin.getLogger().info("飞行检测: " + (flightDetectionEnabled ? "启用" : "禁用"));
+            plugin.getLogger().info("最大空中时间: " + maxAirTime);
+            plugin.getLogger().info("自动封禁: " + (autoBanEnabled ? "启用" : "禁用"));
+            plugin.getLogger().info("封禁前踢出次数: " + kicksBeforeBan);
+        }
     }
 
     public PlayerData getPlayerData(Player player) {
@@ -269,179 +282,12 @@ public class DetectionManager implements Listener {
         double horizontal = Math.hypot(vector.getX(), vector.getZ());
         double vertical = Math.abs(vector.getY());
         
+        // 考虑服务器延迟和TPS影响
+        double tpsFactor = Math.max(0.5, Math.min(1.5, 20.0 / Bukkit.getServer().getTPS()[0]));
+        double adjustedHorizontalThreshold = maxHorizontalSpeed * tpsFactor;
+        double adjustedVerticalThreshold = maxVerticalSpeed * tpsFactor;
+        
         // 鞘翅飞行特殊处理
         if (player.isGliding()) {
             // 使用专用阈值检查鞘翅飞行
-            return horizontal > elytraHorizontalThreshold || vertical > elytraVerticalThreshold;
-        }
-        
-        // 普通移动检测
-        return horizontal > maxHorizontalSpeed || vertical > maxVerticalSpeed;
-    }
-
-    private boolean checkRotationSpeed(Player player, Location from, Location to) {
-        PlayerData data = getPlayerData(player);
-        long now = System.currentTimeMillis();
-        
-        long lastCheck = data.getLastRotationCheck();
-        if (now - lastCheck < rotationCheckInterval) {
-            return false;
-        }
-        
-        // 计算角度变化
-        float deltaYaw = Math.abs(to.getYaw() - from.getYaw());
-        float deltaPitch = Math.abs(to.getPitch() - from.getPitch());
-        
-        // 标准化角度
-        if (deltaYaw > 180) deltaYaw = 360 - deltaYaw;
-        if (deltaPitch > 180) deltaPitch = 360 - deltaPitch;
-        
-        // 计算速度(度/秒)
-        float timeDelta = (now - lastCheck) / 1000f;
-        float yawSpeed = deltaYaw / timeDelta;
-        float pitchSpeed = deltaPitch / timeDelta;
-        
-        data.setLastRotationCheck(now);
-        return yawSpeed > maxAngleChange || pitchSpeed > maxAngleChange;
-    }
-    
-    private boolean checkFlight(Player player, Location from, Location to) {
-        // 跳过鞘翅玩家
-        if (player.isGliding()) {
-            return false;
-        }
-        
-        // 跳过创造模式、旁观模式或有飞行权限的玩家
-        if (player.getGameMode() == GameMode.CREATIVE || 
-            player.getGameMode() == GameMode.SPECTATOR ||
-            player.getAllowFlight()) {
-            return false;
-        }
-        
-        PlayerData data = getPlayerData(player);
-        
-        // 检查玩家是否在地面上
-        boolean isOnGround = isPlayerOnGround(player);
-        
-        // 获取之前的地面状态
-        boolean wasOnGround = data.isWasOnGround();
-        data.setWasOnGround(isOnGround);
-        
-        // 如果玩家在地面上，重置计数器
-        if (isOnGround) {
-            data.setAirTimeCounter(0);
-            return false;
-        }
-        
-        // 如果玩家刚从地面跳起，初始化计数器
-        if (wasOnGround && !isOnGround) {
-            data.setAirTimeCounter(1);
-            return false;
-        }
-        
-        // 增加空中时间计数
-        data.incrementAirTimeCounter();
-        
-        // 检查是否超过最大空中时间
-        if (data.getAirTimeCounter() > maxAirTime) {
-            if (plugin.getConfig().getBoolean("settings.debug", false)) {
-                player.sendMessage(plugin.getLanguageManager().getMessage("flight.detected", 
-                    data.getAirTimeCounter(), maxAirTime));
-            }
-            return true;
-        }
-        
-        return false;
-    }
-    
-    private boolean isPlayerOnGround(Player player) {
-        Location loc = player.getLocation();
-        
-        // 检查玩家脚下方块是否固体
-        Block blockUnder = loc.getBlock().getRelative(BlockFace.DOWN);
-        if (blockUnder.getType().isSolid()) {
-            return true;
-        }
-        
-        // 检查玩家位置下方0.5格是否有方块
-        Location below = loc.clone().subtract(0, 0.5, 0);
-        if (below.getBlock().getType().isSolid()) {
-            return true;
-        }
-        
-        // 使用Bukkit的isOnGround方法作为后备
-        return player.isOnGround();
-    }
-
-    private void handleViolation(Player player, String reasonKey, boolean rollback) {
-        PlayerData data = getPlayerData(player);
-        data.incrementViolationCount();
-        
-        // 记录日志
-        if (plugin.getConfig().getBoolean("settings.log-violations", true)) {
-            plugin.getLogger().warning(plugin.getLanguageManager().getMessage("violation.log", 
-                player.getWorld().getName(),
-                player.getName(),
-                plugin.getLanguageManager().getMessage(reasonKey),
-                data.getViolationCount(),
-                maxViolations
-            ));
-        }
-        
-        // 调试消息
-        if (plugin.getConfig().getBoolean("settings.debug", false)) {
-            player.sendMessage(plugin.getLanguageManager().getMessage("violation.detected", 
-                plugin.getLanguageManager().getMessage(reasonKey)));
-        }
-        
-        // 超过阈值踢出
-        if (data.getViolationCount() >= maxViolations) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                player.kickPlayer(plugin.getLanguageManager().getMessage("kick.message", 
-                    data.getViolationCount(), maxViolations));
-                data.setViolationCount(0);
-                
-                // 记录踢出次数并检查封禁
-                recordKickAndCheckBan(player);
-            });
-        }
-        
-        // 回滚位置
-        if (rollback) {
-            player.teleport(data.getLastValidLocation());
-            if (plugin.getConfig().getBoolean("settings.debug", false)) {
-                player.sendMessage(plugin.getLanguageManager().getMessage("debug.teleport"));
-            }
-        }
-    }
-    
-    private void recordKickAndCheckBan(Player player) {
-        if (!autoBanEnabled) return;
-        
-        PlayerData data = getPlayerData(player);
-        data.incrementKickCount();
-        
-        // 记录日志
-        plugin.getLogger().info(plugin.getLanguageManager().getMessage("player.kicked", 
-            player.getName(), data.getKickCount(), kicksBeforeBan));
-        
-        if (data.getKickCount() >= kicksBeforeBan) {
-            // 使用自定义封禁
-            plugin.getBanManager().customBanPlayer(player.getName(), 
-                plugin.getLanguageManager().getMessage("ban.reason", String.valueOf(data.getKickCount())), 
-                "AntiCheat系统");
-            
-            // 重置踢出计数
-            data.setKickCount(0);
-        }
-    }
-
-    private void updatePlayerData(Player player) {
-        PlayerData data = getPlayerData(player);
-        Location loc = player.getLocation();
-        
-        data.setLastValidLocation(loc.clone());
-        data.setLastYaw(loc.getYaw());
-        data.setLastPitch(loc.getPitch());
-    }
-} // 添加了缺失的闭合大括号
+            return horizontal > (elytraHorizontalThreshold * tpsFactor)
