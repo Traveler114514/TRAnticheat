@@ -1,6 +1,7 @@
 package com.tr.anticheat;
 
 import org.bukkit.*;
+import org.bukkit.BanList.Type;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -49,7 +50,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     private double elytraHorizontalThreshold;
     private double elytraVerticalThreshold;
     
-    // 视角检测
+ // 视角检测
     private float maxAngleChange;
     private long rotationCheckInterval;
     
@@ -130,6 +131,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         // 7. 注册命令
         getCommand("traban").setExecutor(this);
+        getCommand("traunban").setExecutor(this); // 添加解封命令
         
         getLogger().info(getMessage("plugin.enabled", getDescription().getVersion()));
     }
@@ -431,14 +433,14 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             "&f玩家: &7{player}\n" +
             "&f原因: &7{reason}\n" +
             "&f封禁时间: &7{date}\n" +
-            "&f执行者: &7{banned-by}\n" +
+            "&f执行者: &7{banned-by}\\n" +
             "&r\n" +
             "&e此封禁为永久封禁\n" +
             "&r\n" +
             "&6如果您认为这是误封，请通过以下方式申诉:\n" +
-            "&b- 网站: https://traveler114514\n" +
+            "&b- 网站: https://traveler.dpdns.org\n" +
             "&b- QQ群: 315809417\n" +
-            "&b- 邮箱: admin@traveler114514\n" +
+            "&b- 邮箱: admin@traveler.dpdns.org\n" +
             "&r\n" +
             "&7请提供您的游戏ID和封禁时间以便我们处理");
         
@@ -476,6 +478,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         banConfig.set(path + ".date", banDate);
         banConfig.set(path + ".banned-by", bannedBy);
         saveBanConfig();
+        
+        // 添加到Bukkit封禁列表
+        Bukkit.getBanList(Type.NAME).addBan(playerName, reason, null, bannedBy);
         
         // 如果玩家在线，立即踢出
         Player player = Bukkit.getPlayerExact(playerName);
@@ -522,7 +527,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
      * @return 是否被封禁
      */
     public boolean isBanned(String playerName) {
-        return banConfig.contains("bans." + playerName.toLowerCase());
+        return banConfig.contains("bans." + playerName.toLowerCase()) || 
+               Bukkit.getBanList(Type.NAME).isBanned(playerName);
     }
     
     /**
@@ -541,6 +547,36 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         String bannedBy = banConfig.getString(path + ".banned-by", "系统");
         
         return generateBanMessage(playerName, reason, date, bannedBy);
+    }
+    
+    /* ------------------------- 解封功能 ------------------------- */
+    /**
+     * 解封玩家
+     * @param playerName 玩家名
+     * @return 是否成功解封
+     */
+    private boolean unbanPlayer(String playerName) {
+        String path = "bans." + playerName.toLowerCase();
+        boolean found = false;
+        
+        // 从自定义封禁系统中移除
+        if (banConfig.contains(path)) {
+            banConfig.set(path, null);
+            found = true;
+        }
+        
+        // 从Bukkit封禁列表中移除
+        if (Bukkit.getBanList(Type.NAME).isBanned(playerName)) {
+            Bukkit.getBanList(Type.NAME).pardon(playerName);
+            found = true;
+        }
+        
+        if (found) {
+            saveBanConfig();
+            return true;
+        }
+        
+        return false;
     }
 
     /* ------------------------- 定时任务 ------------------------- */
@@ -680,7 +716,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         updatePlayerData(player);
     }
     
-    @EventHandler
+@EventHandler
     public void onEntityGlide(EntityToggleGlideEvent event) {
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
@@ -1108,45 +1144,81 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("traban")) {
-            // 权限检查
-            if (!sender.hasPermission("anticheat.traban")) {
-                sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
-                return true;
-            }
-            
-            // 参数验证
-            if (args.length < 2) {
-                sender.sendMessage(ChatColor.RED + "用法: /traban <玩家> <理由>");
-                return true;
-            }
-            
-            String playerName = args[0];
-            
-            // 构建理由
-            StringBuilder reasonBuilder = new StringBuilder();
-            for (int i = 1; i < args.length; i++) {
-                reasonBuilder.append(args[i]).append(" ");
-            }
-            String reason = reasonBuilder.toString().trim();
-            
-            // 获取执行者名称
-            String bannedBy = sender instanceof Player ? sender.getName() : "控制台";
-            
-            // 执行封禁
-            customBanPlayer(playerName, reason, bannedBy);
-            
-            // 踢出在线玩家
-            Player targetPlayer = Bukkit.getPlayer(playerName);
-            if (targetPlayer != null && targetPlayer.isOnline()) {
-                String banMessage = generateBanMessage(playerName, reason, getFormattedDate(), bannedBy);
-                targetPlayer.kickPlayer(banMessage);
-            }
-            
-            sender.sendMessage(ChatColor.GREEN + "已封禁玩家 " + playerName + " | 理由: " + reason);
-            getLogger().info("玩家 " + playerName + " 已被 " + bannedBy + " 封禁 | 理由: " + reason);
-            
-            return true;
+            // 封禁命令处理
+            return handleBanCommand(sender, args);
+        } 
+        else if (cmd.getName().equalsIgnoreCase("traunban")) {
+            // 解封命令处理
+            return handleUnbanCommand(sender, args);
         }
         return false;
+    }
+    
+    private boolean handleUnbanCommand(CommandSender sender, String[] args) {
+        // 权限检查
+        if (!sender.hasPermission("anticheat.traunban")) {
+            sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
+            return true;
+        }
+        
+        // 参数验证
+        if (args.length < 1) {
+            sender.sendMessage(ChatColor.RED + "用法: /traunban <玩家>");
+            return true;
+        }
+        
+        String playerName = args[0];
+        
+        // 尝试解封
+        if (unbanPlayer(playerName)) {
+            sender.sendMessage(ChatColor.GREEN + "已解封玩家 " + playerName);
+            getLogger().info("玩家 " + playerName + " 已被解封，操作者: " + 
+                (sender instanceof Player ? sender.getName() : "控制台"));
+        } else {
+            sender.sendMessage(ChatColor.RED + "玩家 " + playerName + " 未被封禁或不存在");
+        }
+        
+        return true;
+    }
+    
+    private boolean handleBanCommand(CommandSender sender, String[] args) {
+        // 权限检查
+        if (!sender.hasPermission("anticheat.traban")) {
+            sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
+            return true;
+        }
+        
+        // 参数验证
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "用法: /traban <玩家> <理由>");
+            return true;
+        }
+        
+        String playerName = args[0];
+        
+        // 构建理由
+        StringBuilder reasonBuilder = new StringBuilder();
+        for (int i = 1; i < args.length; i++) {
+            reasonBuilder.append(args[i]).append(" ");
+        }
+        String reason = reasonBuilder.toString().trim();
+        
+        // 获取执行者名称
+        String bannedBy = sender instanceof Player ? sender.getName() : "控制台";
+        
+        // 执行封禁
+        customBanPlayer(playerName, reason, bannedBy);
+        
+        // 踢出在线玩家
+        Player targetPlayer = Bukkit.getPlayer(playerName);
+        if (targetPlayer != null && targetPlayer.isOnline()) {
+            String banMessage = generateBanMessage(playerName, reason, getFormattedDate(), bannedBy);
+            targetPlayer.kickPlayer(banMessage);
+        }
+        
+        sender.sendMessage(ChatColor.GREEN + "已封禁玩家 " + playerName + " | 理由: " + reason);
+        getLogger().info("玩家 " + playerName + " 已被 " + bannedBy + " 封禁 | 理由: " + reason);
+        
+        return true;
     }
 }
