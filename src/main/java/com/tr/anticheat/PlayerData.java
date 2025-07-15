@@ -8,13 +8,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class PlayerData {
-    private UUID playerId;
+    private final UUID playerId;
     private Location lastValidLocation;
     private float lastYaw;
     private float lastPitch;
     private long lastRotationCheck;
     private int violationCount;
-    private Deque<Long> clickRecords = new ConcurrentLinkedDeque<>();
+    private final Deque<Long> clickRecords = new ConcurrentLinkedDeque<>();
     private int clickViolations;
     private int airTimeCounter;
     private boolean wasOnGround;
@@ -29,7 +29,6 @@ public class PlayerData {
         this.wasOnGround = isPlayerOnGround(player);
     }
 
-    // Getter 和 Setter 方法
     public UUID getPlayerId() {
         return playerId;
     }
@@ -73,9 +72,13 @@ public class PlayerData {
     public void setViolationCount(int violationCount) {
         this.violationCount = violationCount;
     }
-
+    
     public void incrementViolationCount() {
         this.violationCount++;
+    }
+    
+    public void resetViolationCount() {
+        this.violationCount = 0;
     }
 
     public Deque<Long> getClickRecords() {
@@ -89,9 +92,13 @@ public class PlayerData {
     public void setClickViolations(int clickViolations) {
         this.clickViolations = clickViolations;
     }
-
+    
     public void incrementClickViolations() {
         this.clickViolations++;
+    }
+    
+    public void decrementClickViolations() {
+        this.clickViolations = Math.max(0, this.clickViolations - 1);
     }
 
     public int getAirTimeCounter() {
@@ -101,7 +108,7 @@ public class PlayerData {
     public void setAirTimeCounter(int airTimeCounter) {
         this.airTimeCounter = airTimeCounter;
     }
-
+    
     public void incrementAirTimeCounter() {
         this.airTimeCounter++;
     }
@@ -121,13 +128,14 @@ public class PlayerData {
     public void setKickCount(int kickCount) {
         this.kickCount = kickCount;
     }
-
+    
     public void incrementKickCount() {
         this.kickCount++;
     }
-
+    
     private boolean isPlayerOnGround(Player player) {
-        // 实现地面检测逻辑
-        return player.isOnGround();
+        // 简化的地面检测逻辑
+        return player.isOnGround() || 
+               player.getLocation().getBlock().getRelative(org.bukkit.block.BlockFace.DOWN).getType().isSolid();
     }
 }
