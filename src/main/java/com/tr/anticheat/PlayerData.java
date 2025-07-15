@@ -1,6 +1,7 @@
 package com.tr.anticheat;
 
 import org.bukkit.Location;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import java.util.Deque;
@@ -134,8 +135,20 @@ public class PlayerData {
     }
     
     private boolean isPlayerOnGround(Player player) {
-        // 简化的地面检测逻辑
-        return player.isOnGround() || 
-               player.getLocation().getBlock().getRelative(org.bukkit.block.BlockFace.DOWN).getType().isSolid();
+        Location loc = player.getLocation();
+        
+        // 检查玩家脚下方块是否固体
+        if (loc.getBlock().getRelative(BlockFace.DOWN).getType().isSolid()) {
+            return true;
+        }
+        
+        // 检查玩家位置下方0.5格是否有方块
+        Location below = loc.clone().subtract(0, 0.5, 0);
+        if (below.getBlock().getType().isSolid()) {
+            return true;
+        }
+        
+        // 使用Bukkit的isOnGround方法作为后备
+        return player.isOnGround();
     }
 }
