@@ -93,9 +93,12 @@ elytra:
   disabled: "§c鞘翅飞行检测已启用"
   bypass: "§7[TRAnticheat] §f检测到鞘翅飞行，已跳过检测"
 
-飞行
 violation:
+  movement: "移动速度异常"
+  rotation: "视角旋转异常"
   flight: "飞行作弊"
+  log: "在 {0} 世界中的玩家 {1} 因 {2} 被记录违规 ({3}/{4})"
+  detected: "&c检测到违规行为: {0}"
   
 flight:
   detected: "&c检测到飞行! 空中时间: {0}tick (最大允许: {1}tick)"
