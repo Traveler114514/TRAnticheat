@@ -511,26 +511,6 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         
         return ChatColor.translateAlternateColorCodes('&', template
             .replace("{player}", playerName)
-private String generateBanMessage(String playerName, String reason, String date, String bannedBy) {
-        String template = banConfig.getString("ban-message", 
-            "&4&l您已被服务器封禁\n" +
-            "&r\n" +
-            "&f玩家: &7{player}\n" +
-            "&f原因: &7{reason}\n" +
-            "&f封禁时间: &7{date}\n" +
-            "&f执行者: &7{banned-by}\n" +
-            "&r\n" +
-            "&e此封禁为永久封禁\n" +
-            "&r\n" +
-            "&6如果您认为这是误封，请通过以下方式申诉:\n" +
-            "&b- 网站: https://traveler114514\n" +
-            "&b- QQ群: 315809417\n" +
-            "&b- 邮箱: admin@traveler114514\n" +
-            "&r\n" +
-            "&7请提供您的游戏ID和封禁时间以便我们处理");
-        
-        return ChatColor.translateAlternateColorCodes('&', template
-            .replace("{player}", playerName)
             .replace("{reason}", reason)
             .replace("{date}", date)
             .replace("{banned-by}", bannedBy));
@@ -1001,7 +981,7 @@ private String generateBanMessage(String playerName, String reason, String date,
         if (!autoBanEnabled) return;
         
         UUID uuid = player.getUniqueId();
-        int kicks = kickCount.merge(uuid, 1, Integer::sum);
+        int kicks = kickCount.merge(uuid, 极, Integer::sum);
         
         // 记录日志
         getLogger().info(getMessage("player.kicked", player.getName(), kicks, kicksBeforeBan));
