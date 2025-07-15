@@ -726,7 +726,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         return true;
     }
     
-    private boolean handleUnbanCommand(CommandSender sender, String[] args) {
+private boolean handleUnbanCommand(CommandSender sender, String[] args) {
         // 权限检查
         if (!sender.hasPermission("anticheat.traunban")) {
             sender.sendMessage(ChatColor.RED + "你没有权限使用此命令！");
@@ -740,3 +740,239 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener {
         }
         
         String playerName = args[0];
+        
+        // 构建解封理由
+        String reason = "管理员解封";
+        if (args.length > 1) {
+            StringBuilder reasonBuilder = new StringBuilder();
+            for (int i = 1; i < args.length; i++) {
+                reasonBuilder.append(args[i]).append(" ");
+            }
+            reason = reasonBuilder.toString().trim();
+        }
+        
+        // 获取执行者名称
+        String unbannedBy = sender instanceof Player ? sender.getName() : "控制台";
+        
+        // 执行解封
+        unbanPlayer(playerName, reason, unbannedBy);
+        
+        sender.sendMessage(ChatColor.GREEN + "已解封玩家 " + playerName + " | 理由: " + reason);
+        getLogger().info("玩家 " + playerName + " 已被 " + unbannedBy + " 解封 | 理由: " + reason);
+        
+        return true;
+    }
+    
+    private boolean handleDebugCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("anticheat.debug")) {
+            sender.sendMessage(ChatColor.RED + "你没有权限使用此命令!");
+            return true;
+        }
+        
+        if (args.length < 1) {
+            sender.sendMessage(ChatColor.RED + "用法: /trac debug <on|off|reload>");
+            return true;
+        }
+        
+        String subCommand = args[0].toLowerCase();
+        switch (subCommand) {
+            case "on":
+                config.set("settings.debug", true);
+                saveConfig();
+                reloadPluginConfig();
+                sender.sendMessage(ChatColor.GREEN + "调试模式已启用!");
+                break;
+            case "off":
+                config.set("settings.debug", false);
+                saveConfig();
+                reloadPluginConfig();
+                sender.sendMessage(ChatColor.GREEN + "调试模式已禁用!");
+                break;
+            case "reload":
+                reloadPluginConfig();
+                sender.sendMessage(ChatColor.GREEN + "配置已重载!");
+                break;
+            default:
+                sender.sendMessage(ChatColor.RED + "用法: /trac debug <on|off|reload>");
+                break;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 玩家数据类
+     */
+    private static class PlayerData {
+        private final UUID playerId;
+        private Location lastValidLocation;
+        private float lastYaw;
+        private float lastPitch;
+        private long lastRotationCheck;
+        private int violationCount;
+        private final Deque<Long> clickRecords = new ConcurrentLinkedDeque<>();
+        private int clickViolations;
+        private int airTimeCounter;
+        private boolean wasOnGround;
+        private int kickCount;
+
+        public PlayerData(Player player) {
+            this.playerId = player.getUniqueId();
+            this.lastValidLocation = player.getLocation().clone();
+            this.lastYaw = player.getLocation().getYaw();
+            this.lastPitch = player.getLocation().getPitch();
+            this.lastRotationCheck = System.currentTimeMillis();
+            this.wasOnGround = isPlayerOnGround(player);
+        }
+
+        public UUID getPlayerId() {
+            return playerId;
+        }
+
+        public Location getLastValidLocation() {
+            return lastValidLocation;
+        }
+
+        public void setLastValidLocation(Location lastValidLocation) {
+            this.lastValidLocation = lastValidLocation;
+        }
+
+        public float getLastYaw() {
+            return lastYaw;
+        }
+
+        public void setLastYaw(float lastYaw) {
+            this.lastYaw = lastYaw;
+        }
+
+        public float getLastPitch() {
+            return lastPitch;
+        }
+
+        public void setLastPitch(float lastPitch) {
+            this.lastPitch = lastPitch;
+        }
+
+        public long getLastRotationCheck() {
+            return lastRotationCheck;
+        }
+
+        public void setLastRotationCheck(long lastRotationCheck) {
+            this.lastRotationCheck = lastRotationCheck;
+        }
+
+        public int getViolationCount() {
+            return violationCount;
+        }
+
+        public void setViolationCount(int violationCount) {
+            this.violationCount = violationCount;
+        }
+        
+        public void incrementViolationCount() {
+            this.violationCount++;
+        }
+        
+        public void resetViolationCount() {
+            this.violationCount = 0;
+        }
+
+        public Deque<Long> getClickRecords() {
+            return clickRecords;
+        }
+
+        public int getClickViolations() {
+            return clickViolations;
+        }
+
+        public void setClickViolations(int clickViolations) {
+            this.clickViolations = clickViolations;
+        }
+        
+        public void incrementClickViolations() {
+            this.clickViolations++;
+        }
+        
+        public void decrementClickViolations() {
+            this.clickViolations = Math.max(0, this.clickViolations - 1);
+        }
+
+        public int getAirTimeCounter() {
+            return airTimeCounter;
+        }
+
+        public void setAirTimeCounter(int airTimeCounter) {
+            this.airTimeCounter = airTimeCounter;
+        }
+        
+        public void incrementAirTimeCounter() {
+            this.airTimeCounter++;
+        }
+
+        public boolean isWasOnGround() {
+            return wasOnGround;
+        }
+
+        public void setWasOnGround(boolean wasOnGround) {
+            this.wasOnGround = wasOnGround;
+        }
+
+        public int getKickCount() {
+            return kickCount;
+        }
+
+        public void setKickCount(int kickCount) {
+            this.kickCount = kickCount;
+        }
+        
+        public void incrementKickCount() {
+            this.kickCount++;
+        }
+        
+        private boolean isPlayerOnGround(Player player) {
+            Location loc = player.getLocation();
+            
+            // 检查玩家脚下方块是否固体
+            Block blockUnder = loc.getBlock().getRelative(BlockFace.DOWN);
+            if (blockUnder.getType().isSolid()) {
+                return true;
+            }
+            
+            // 检查玩家位置下方0.5格是否有方块
+            Location below = loc.clone().subtract(0, 0.5, 0);
+            if (below.getBlock().getType().isSolid()) {
+                return true;
+            }
+            
+            // 使用Bukkit的isOnGround方法作为后备
+            return player.isOnGround();
+        }
+    }
+    
+    /**
+     * 封禁信息类
+     */
+    private static class BanInfo {
+        private final String reason;
+        private final String bannedBy;
+        private final String date;
+        
+        public BanInfo(String reason, String bannedBy, String date) {
+            this.reason = reason;
+            this.bannedBy = bannedBy;
+            this.date = date;
+        }
+        
+        public String getReason() {
+            return reason;
+        }
+        
+        public String getBannedBy() {
+            return bannedBy;
+        }
+        
+        public String getDate() {
+            return date;
+        }
+    }
+}
