@@ -4,6 +4,7 @@ main: com.tr.anticheat.AntiCheatPlugin
 api-version: 1.16
 author: Traveler114514
 description: Advanced anti-cheat solution for Bukkit servers
+softdepend: [ProtocolLib]
 
 # 命令定义
 commands:
