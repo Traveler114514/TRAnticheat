@@ -68,6 +68,7 @@ debug:
   cps: "&eCurrent CPS: {0}"
   elytra-on: "&aElytra flight activated"
   elytra-off: "&cElytra flight deactivated"
+  elytra-buffer: "&eElytra buffer: Updating position without penalty"
 
 # Command messages
 command:
@@ -83,6 +84,7 @@ elytra:
   enabled: "&aElytra detection disabled"
   disabled: "&cElytra detection enabled"
   bypass: "&7[AntiCheat] &fElytra flight detected, bypassing checks"
+  buffer: "&7[AntiCheat] &eElytra buffer period ended"
 
 # Ban message template
 ban-message: |
