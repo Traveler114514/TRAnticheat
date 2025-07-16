@@ -98,7 +98,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         reloadConfig();
         
         // 加载语言文件
-        language = getConfig().getString("language", "en");
+        language = getConfig().String("language", "en");
         loadLanguageFile();
         
         // 加载设置
@@ -275,10 +275,18 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
     
-    private String getFormattedPluginVersion() {
+    /* ------------------------- 工具方法 ------------------------- */
+    
+    /**
+     * 获取格式化版本号
+     */
+    public String getFormattedPluginVersion() {
         return formatVersion(PLUGIN_VERSION);
     }
     
+    /**
+     * 格式化版本号
+     */
     private String formatVersion(int version) {
         String versionStr = String.valueOf(version);
         while (versionStr.length() < 3) {
@@ -858,13 +866,6 @@ private void handleViolation(Player player, String reasonKey, boolean rollback) 
         return PLUGIN_VERSION;
     }
     
-    /**
-     * 获取格式化版本号
-     */
-    public String getFormattedPluginVersion() {
-        return formatVersion(PLUGIN_VERSION);
-    }
-    
     /* ------------------------- 命令处理器 ------------------------- */
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -1044,7 +1045,7 @@ private void handleViolation(Player player, String reasonKey, boolean rollback) 
                 getLogger().info("解析后的远程版本号: " + remoteVersion);
                 
                 // 格式化版本号用于显示
-                String formattedCurrent = formatVersion(PLUGIN_VERSION);
+                String formattedCurrent = getFormattedPluginVersion();
                 String formattedRemote = formatVersion(remoteVersion);
                 
                 if (remoteVersion > PLUGIN_VERSION) {
