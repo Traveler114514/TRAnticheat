@@ -166,7 +166,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         maxAngleChange = (float) getConfig().getDouble("settings.rotation.max-angle-change", 1350);
         rotationCheckInterval = getConfig().getLong("settings.rotation.check-interval", 15);
         maxCps = getConfig().getInt("settings.clicks.max-cps", 18);
-        clicksCheckInterval = getConfig().get极Int("settings.clicks.check-interval", 1);
+        clicksCheckInterval = getConfig().getInt("settings.clicks.check-interval", 1);
         clicksViolationsToKick = getConfig().getInt("settings.clicks.violations-to-kick", 2);
         maxAirTime = getConfig().getInt("settings.flight.max-air-time", 80);
         elytraHorizontalThreshold = getConfig().getDouble("settings.elytra.max-horizontal-speed", 2.0);
@@ -633,7 +633,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 检查是否超过最大空中时间
         if (airTime > maxAirTime) {
             if (debugMode) {
-                player.sendMessage(getMessage("flight.detected", airTime, maxAir极Time));
+                player.sendMessage(getMessage("flight.detected", airTime, maxAirTime));
             }
             return true;
         }
