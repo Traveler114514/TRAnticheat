@@ -747,9 +747,10 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         updatePlayerData(player);
     }
 
-    @EventHandler
+@EventHandler
     public void onEntityGlide(EntityToggleGlideEvent event) {
-        if (event.getEntity() instanceof Player player) {
+        if (event.getEntity() instanceof Player) {
+            Player player = (Player) event.getEntity();
             UUID uuid = player.getUniqueId();
             
             if (debugMode) {
