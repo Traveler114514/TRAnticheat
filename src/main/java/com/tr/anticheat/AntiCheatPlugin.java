@@ -34,7 +34,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
     // 插件元数据
     private static final int PLUGIN_VERSION = 105; // 1.0.5
     private static final String VERSION_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/TRAnticheat/main/version.txt";
-    
+    private static final String MAINTENANCE_CHECK_URL = "https://raw.githubusercontent.com/Traveler114514/TRAnticheat/main/maintenance.txt";
     // 配置参数
     private String language;
     private boolean debugMode;
@@ -98,7 +98,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         reloadConfig();
         
         // 加载语言文件
-        language = getConfig().String("language", "en");
+        language = getConfig().getString("language", "en");
         loadLanguageFile();
         
         // 加载设置
@@ -166,7 +166,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         maxAngleChange = (float) getConfig().getDouble("settings.rotation.max-angle-change", 1350);
         rotationCheckInterval = getConfig().getLong("settings.rotation.check-interval", 15);
         maxCps = getConfig().getInt("settings.clicks.max-cps", 18);
-        clicksCheckInterval = getConfig().getInt("settings.clicks.check-interval", 1);
+        clicksCheckInterval = getConfig().get极Int("settings.clicks.check-interval", 1);
         clicksViolationsToKick = getConfig().getInt("settings.clicks.violations-to-kick", 2);
         maxAirTime = getConfig().getInt("settings.flight.max-air-time", 80);
         elytraHorizontalThreshold = getConfig().getDouble("settings.elytra.max-horizontal-speed", 2.0);
@@ -525,8 +525,9 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             String playerName = event.getPlayer().getName();
             String path = "bans." + playerName.toLowerCase();
             
-            String reason = banConfig.getString(path + ".reason", 
-                banConfig.getString("default-reason", "多次检测到作弊行为"));
+            // 修复：分开获取默认值和实际值
+            String defaultReason = banConfig.getString("default-reason", "多次检测到作弊行为");
+            String reason = banConfig.getString(path + ".reason", defaultReason);
             
             String date = banConfig.getString(path + ".date", getFormattedDate());
             
@@ -632,7 +633,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 检查是否超过最大空中时间
         if (airTime > maxAirTime) {
             if (debugMode) {
-                player.sendMessage(getMessage("flight.detected", airTime, maxAirTime));
+                player.sendMessage(getMessage("flight.detected", airTime, maxAir极Time));
             }
             return true;
         }
@@ -659,7 +660,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         return player.isOnGround();
     }
 
-private void handleViolation(Player player, String reasonKey, boolean rollback) {
+    private void handleViolation(Player player, String reasonKey, boolean rollback) {
         UUID uuid = player.getUniqueId();
         
         // 增加违规计数
@@ -864,6 +865,13 @@ private void handleViolation(Player player, String reasonKey, boolean rollback) 
      */
     public int getPluginVersion() {
         return PLUGIN_VERSION;
+    }
+    
+    /**
+     * 获取格式化版本号
+     */
+    public String getFormattedPluginVersion() {
+        return formatVersion(PLUGIN_VERSION);
     }
     
     /* ------------------------- 命令处理器 ------------------------- */
