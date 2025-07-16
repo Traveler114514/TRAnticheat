@@ -13,7 +13,7 @@ error:
 
 # 语言相关
 language:
-  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&极 7 条消息"
+  loaded: "&7已加载语言: &f{0}&7, 包含 &f{1}&7 条消息"
   reloaded: "&7语言已重新加载: &f{0}"
 
 # 清理任务
@@ -33,6 +33,7 @@ debug:
   rotation: "&7[反作弊] &f视角已重置"
   elytra-on: "&a鞘翅飞行已启动"
   elytra-off: "&c鞘翅飞行已停止"
+  elytra-buffer: "&e鞘翅缓冲期: 更新位置但不标记违规"
 
 # 违规检测
 violation:
@@ -60,16 +61,6 @@ clicks:
 ban:
   executed: "&7玩家 &f{0}&7 已被封禁. 原因: &f{1}"
   reason: "检测到作弊行为 (累计被踢出 {0} 次)"
-  info: |
-    &4&l您已被封禁
-    &r
-    &f玩家: &7{player}
-    &f原因: &7{reason}
-    &f时间: &7{date}
-    &f执行者: &7{banned-by}
-    &r
-    &e申诉地址: &bexample.com/appeal
-    &e联系方式: &bsupport@example.com
 
 # 白名单消息
 whitelist:
@@ -106,3 +97,4 @@ elytra:
   enabled: "§a鞘翅飞行检测已禁用"
   disabled: "§c鞘翅飞行检测已启用"
   bypass: "§7[TRAnticheat] §f检测到鞘翅飞行，已跳过检测"
+  buffer: "§7[TRAnticheat] §e鞘翅缓冲期结束"
