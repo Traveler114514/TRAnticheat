@@ -17,6 +17,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.Vector;
 import org.bukkit.Material;
+import org.bukkit.ChatColor;
 
 import java.io.File;
 import java.io.IOException;
@@ -242,13 +243,13 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         // 如果语言文件不存在，从JAR中复制
         if (!langFile.exists()) {
             saveResource("messages_" + language + ".yml", false);
-            getLogger().info(getMessage("language.loaded", language, "default"));
+            getLogger().info("已创建语言文件: " + langFile.getName());
         }
         
         // 加载语言文件
         langConfig = YamlConfiguration.loadConfiguration(langFile);
         
-        // 预加载所有消息
+        // 预加载所有消息到内存
         messages.clear();
         for (String key : langConfig.getKeys(true)) {
             if (langConfig.isString(key)) {
@@ -650,7 +651,7 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
         return player.isOnGround();
     }
 
-    private void handleViolation(Player player, String reasonKey, boolean rollback) {
+private void handleViolation(Player player, String reasonKey, boolean rollback) {
         UUID uuid = player.getUniqueId();
         
         // 增加违规计数
@@ -695,7 +696,8 @@ public class AntiCheatPlugin extends JavaPlugin implements Listener, CommandExec
             }
         }
     }
-private void handleClickViolation(Player player, double cps) {
+
+    private void handleClickViolation(Player player, double cps) {
         UUID uuid = player.getUniqueId();
         int violations = clickViolations.merge(uuid, 1, Integer::sum);
         
@@ -974,13 +976,6 @@ private void handleClickViolation(Player player, double cps) {
     }
     
     /**
-     * 获取格式化日期
-     */
-    private String getFormattedDate() {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-    }
-    
-    /**
      * 自定义封禁玩家
      */
     private void customBanPlayer(String playerName, String reason, String bannedBy) {
@@ -1024,17 +1019,6 @@ private void handleClickViolation(Player player, double cps) {
     }
     
     /**
-     * 保存封禁配置
-     */
-    private void saveBanConfig() {
-        try {
-            banConfig.save(banFile);
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, getMessage("error.ban-save"), e);
-        }
-    }
-    
-    /**
      * 检查玩家是否被封禁
      */
     private boolean isBanned(String playerName) {
@@ -1043,19 +1027,6 @@ private void handleClickViolation(Player player, double cps) {
     }
     
     /* ------------------------- 其他辅助方法 ------------------------- */
-    
-    /**
-     * 格式化版本号
-     */
-    private String formatVersion(int version) {
-        String versionStr = String.valueOf(version);
-        while (versionStr.length() < 3) {
-            versionStr = "0" + versionStr;
-        }
-        return versionStr.substring(0, versionStr.length() - 2) + "." +
-               versionStr.substring(versionStr.length() - 2, versionStr.length() - 1) + "." +
-               versionStr.substring(versionStr.length() - 1);
-    }
     
     /**
      * 检查版本更新
@@ -1125,45 +1096,5 @@ private void handleClickViolation(Player player, double cps) {
         }
         
         return content.toString();
-    }
-    
-    /**
-     * 加载语言文件
-     */
-    private void loadLanguageFile() {
-        File langFile = new File(getDataFolder(), "messages_" + language + ".yml");
-        
-        // 如果语言文件不存在，从JAR中复制
-        if (!langFile.exists()) {
-            saveResource("messages_" + language + ".yml", false);
-            getLogger().info("已创建语言文件: " + langFile.getName());
-        }
-        
-        // 加载语言文件
-        langConfig = YamlConfiguration.loadConfiguration(langFile);
-        
-        // 预加载所有消息到内存
-        messages.clear();
-        for (String key : langConfig.getKeys(true)) {
-            if (langConfig.isString(key)) {
-                messages.put(key, langConfig.getString(key));
-            }
-        }
-        
-        getLogger().info(getMessage("language.loaded", language, String.valueOf(messages.size())));
-    }
-    
-    /**
-     * 获取本地化消息
-     */
-    public String getMessage(String key, Object... args) {
-        String message = messages.getOrDefault(key, key);
-        
-        // 替换占位符
-        for (int i = 0; i < args.length; i++) {
-            message = message.replace("{" + i + "}", String.valueOf(args[i]));
-        }
-        
-        return ChatColor.translateAlternateColorCodes('&', message);
     }
 }
