@@ -5,13 +5,13 @@ settings:
   # 调试模式
   debug: false
   # 踢出广播
-  broadcast-kick: true  # 是否广播踢出消息
+  broadcast-kick: true
   
   # 检测开关
   movement:
     enabled: true # 移动检测开关
     max-horizontal-speed: 0.90 # 横向速度检测
-    max-vertical-speed: 9999.0 #垂直不检测
+    max-vertical-speed: 0.45 # 垂直速度检测
     check-jump-boost: true
     check-ground-speed: true
   
@@ -30,11 +30,15 @@ settings:
   flight:
     enabled: true # 飞行检测开关
     max-air-time: 80 # 最大空中时间 (tick)，20 tick = 1秒
+    ignore-water: true # 忽略水中飞行检测
+    ignore-climbables: true # 忽略攀爬物飞行检测
   
   elytra:
-    enabled: false # 鞘翅检测开关
+    enabled: true # 鞘翅检测开关
     max-horizontal-speed: 2.0 # 水平速度阈值
     max-vertical-speed: 1.5   # 垂直速度阈值
+    landing-buffer: 0.5 # 落地缓冲时间（秒）
+    buffer-multiplier: 1.5 # 缓冲期速度乘数
   
   # 违规处理设置
   violations:
