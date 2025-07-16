@@ -21,7 +21,7 @@ default-reason: "多次检测到作弊行为"
 # 封禁列表 (由插件自动管理)
 bans:
   # 示例:
-  # traveler114514:
+  # Traveler114514:
   #   reason: 使用外挂
   #   date: "2023-06-15 14:30:00"
   #   banned-by: AntiCheat系统
